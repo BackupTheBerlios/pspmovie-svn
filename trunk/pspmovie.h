@@ -42,6 +42,7 @@ class CTranscode {
 		int TotalFrames() { return (int)((m_duration * m_fps) / 1000.0); }
 		
 		QProcess *Start(CJobControlImp *ctrl, const QString &dst);
+		QProcess *StartThumbnail(CJobControlImp *ctrl, const QString &dst);
 
 		int Id() { return m_id; }
 		
@@ -56,14 +57,18 @@ class CJobQueue {
 		//
 		// current ffmpeg process info
 		QProcess *m_curr_process;
-		
+		int m_curr_file_id;
 		bool m_in_progress_out;
 		
 		int m_total_frames;
 		
 		void ParseFfmpegOutputLine(const char *line);
 		
-		static void UpdateProgress(void *, const char *);
+		static void UpdateTranscodeProgress(void *, const char *);
+		static void UpdateThumbnailProgress(void *, const char *);
+
+		void TranscodeProcessDone();
+		void ThumbnailProcessDone();
 	public:
 		CJobQueue();
 		
@@ -81,7 +86,6 @@ class CJobQueue {
 		bool IsEmpty() { return m_queue.empty(); }
 		
 		
-		void CurrProcessDone();
 };
 
 extern CJobQueue g_job_queue;

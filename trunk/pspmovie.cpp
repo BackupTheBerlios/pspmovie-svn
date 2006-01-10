@@ -237,6 +237,41 @@ QProcess *CTranscode::Start(CJobControlImp *proc, const QString &dst)
     return proc->Start();
 }
 
+QProcess *CTranscode::StartThumbnail(CJobControlImp *proc, const QString &dst)
+{
+	proc->AddProcessArg("ffmpeg");
+	proc->AddProcessArg("-i");
+	proc->AddProcessArg(m_src);
+    
+	proc->AddProcessArg("-y");
+
+	// size
+	proc->AddProcessArg("-s");
+	proc->AddProcessArg("160x90");
+	// title
+	proc->AddProcessArg("-title");
+	proc->AddProcessArg(m_title);
+
+	proc->AddProcessArg("-r");
+	proc->AddProcessArg("1");
+	proc->AddProcessArg("-t");
+	proc->AddProcessArg("1");
+
+	proc->AddProcessArg("-ss");
+	proc->AddProcessArg("3:00.00");
+
+	proc->AddProcessArg("-an");
+
+	proc->AddProcessArg("-f");
+	proc->AddProcessArg("mjpeg");
+
+	QString target_path = QDir::cleanDirPath(GetAppSettings()->TargetDir() +
+		QDir::convertSeparators("/") + dst);
+		
+	proc->AddProcessArg(target_path);
+    return proc->Start();
+}
+
 //
 // Queue of pending and running jobs
 //
@@ -255,15 +290,14 @@ bool CJobQueue::Start()
 	}
 	CTranscode &new_job = m_queue.front();
 
-	CJobControlImp *job_ctrl = new CJobControlImp(UpdateProgress, this);
+	CJobControlImp *job_ctrl = new CJobControlImp(UpdateTranscodeProgress, this);
 	
 	m_total_frames = new_job.TotalFrames();
 	
-	int out_idx = GetAppSettings()->GetNewOutputNameIdx();
+	m_curr_file_id = GetAppSettings()->GetNewOutputNameIdx();
 	QString target;
-	target.sprintf("M4V%5d.MP4", out_idx);
+	target.sprintf("M4V%5d.MP4", m_curr_file_id);
 	m_curr_process = new_job.Start(job_ctrl, target);
-	m_queue.pop_front();
 	
 	return true;
 }
@@ -321,19 +355,42 @@ void CJobQueue::ParseFfmpegOutputLine(const char *line)
 	}
 }
 
-void CJobQueue::UpdateProgress(void *ptr, const char *outline)
+void CJobQueue::UpdateTranscodeProgress(void *ptr, const char *outline)
 {
 	CJobQueue *This = (CJobQueue *)ptr;
 	if ( outline ) {
 		This->ParseFfmpegOutputLine(outline);
 	} else {
-		This->CurrProcessDone();
+		This->TranscodeProcessDone();
 	}
 }
 
-void CJobQueue::CurrProcessDone()
+void CJobQueue::TranscodeProcessDone()
 {
-	printf("Process done\n");
+	printf("TranscodeProcessDone\n");
+	QString target;
+	target.sprintf("M4V%5d.THM", m_curr_file_id);
+
+	CTranscode &new_job = m_queue.front();
+
+	CJobControlImp *job_ctrl = new CJobControlImp(UpdateThumbnailProgress, this);
+	m_curr_process = new_job.StartThumbnail(job_ctrl, target);
+}
+
+void CJobQueue::UpdateThumbnailProgress(void *ptr, const char *outline)
+{
+	CJobQueue *This = (CJobQueue *)ptr;
+	if ( outline ) {
+	} else {
+		This->ThumbnailProcessDone();
+	}
+}
+
+
+void CJobQueue::ThumbnailProcessDone()
+{
+	// done with it - remove from queue
+	m_queue.pop_front();
 }
 
 //
