@@ -1,0 +1,363 @@
+<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
+<class>MainWin</class>
+<widget class="QMainWindow">
+    <property name="name">
+        <cstring>MainWin</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>600</width>
+            <height>445</height>
+        </rect>
+    </property>
+    <property name="sizePolicy">
+        <sizepolicy>
+            <hsizetype>0</hsizetype>
+            <vsizetype>5</vsizetype>
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+    </property>
+    <property name="minimumSize">
+        <size>
+            <width>21</width>
+            <height>56</height>
+        </size>
+    </property>
+    <property name="maximumSize">
+        <size>
+            <width>600</width>
+            <height>32767</height>
+        </size>
+    </property>
+    <property name="caption">
+        <string>Coder</string>
+    </property>
+    <property name="dockWindowsMovable">
+        <bool>false</bool>
+    </property>
+    <widget class="QGroupBox">
+        <property name="name">
+            <cstring>groupBox2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>160</y>
+                <width>580</width>
+                <height>230</height>
+            </rect>
+        </property>
+        <property name="title">
+            <string>Transcoding queue</string>
+        </property>
+        <widget class="QListView">
+            <column>
+                <property name="text">
+                    <string>Name</string>
+                </property>
+                <property name="clickable">
+                    <bool>true</bool>
+                </property>
+                <property name="resizable">
+                    <bool>true</bool>
+                </property>
+            </column>
+            <column>
+                <property name="text">
+                    <string>Duration</string>
+                </property>
+                <property name="clickable">
+                    <bool>true</bool>
+                </property>
+                <property name="resizable">
+                    <bool>true</bool>
+                </property>
+            </column>
+            <property name="name">
+                <cstring>listView_Queue</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>0</x>
+                    <y>30</y>
+                    <width>600</width>
+                    <height>200</height>
+                </rect>
+            </property>
+        </widget>
+    </widget>
+    <widget class="QGroupBox">
+        <property name="name">
+            <cstring>groupBox1</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>20</y>
+                <width>580</width>
+                <height>130</height>
+            </rect>
+        </property>
+        <property name="title">
+            <string>Now encoding</string>
+        </property>
+        <widget class="QLabel">
+            <property name="name">
+                <cstring>textLabel2</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>11</x>
+                    <y>19</y>
+                    <width>67</width>
+                    <height>21</height>
+                </rect>
+            </property>
+            <property name="minimumSize">
+                <size>
+                    <width>0</width>
+                    <height>20</height>
+                </size>
+            </property>
+            <property name="text">
+                <string>Source file:</string>
+            </property>
+        </widget>
+        <widget class="QProgressBar">
+            <property name="name">
+                <cstring>progressBar_Encode</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>10</x>
+                    <y>60</y>
+                    <width>540</width>
+                    <height>24</height>
+                </rect>
+            </property>
+            <property name="progress">
+                <number>0</number>
+            </property>
+        </widget>
+        <widget class="QLineEdit">
+            <property name="name">
+                <cstring>lineEdit_CurrFile</cstring>
+            </property>
+            <property name="enabled">
+                <bool>false</bool>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>84</x>
+                    <y>19</y>
+                    <width>485</width>
+                    <height>21</height>
+                </rect>
+            </property>
+        </widget>
+        <widget class="QLabel">
+            <property name="name">
+                <cstring>textLabel5</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>11</x>
+                    <y>99</y>
+                    <width>80</width>
+                    <height>23</height>
+                </rect>
+            </property>
+            <property name="text">
+                <string>Current frame</string>
+            </property>
+        </widget>
+        <widget class="QLabel">
+            <property name="name">
+                <cstring>textLabel5_2</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>221</x>
+                    <y>99</y>
+                    <width>80</width>
+                    <height>23</height>
+                </rect>
+            </property>
+            <property name="text">
+                <string>Total frames</string>
+            </property>
+        </widget>
+        <widget class="QLCDNumber">
+            <property name="name">
+                <cstring>lCDNumber_Frame</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>97</x>
+                    <y>99</y>
+                    <width>64</width>
+                    <height>23</height>
+                </rect>
+            </property>
+            <property name="numDigits">
+                <number>7</number>
+            </property>
+            <property name="segmentStyle">
+                <enum>Flat</enum>
+            </property>
+        </widget>
+        <widget class="QLCDNumber">
+            <property name="name">
+                <cstring>lCDNumber_TotalFrames</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>300</x>
+                    <y>100</y>
+                    <width>64</width>
+                    <height>23</height>
+                </rect>
+            </property>
+            <property name="numDigits">
+                <number>7</number>
+            </property>
+            <property name="segmentStyle">
+                <enum>Flat</enum>
+            </property>
+        </widget>
+    </widget>
+</widget>
+<toolbars>
+    <toolbar dock="2">
+        <property name="name">
+            <cstring>Toolbar</cstring>
+        </property>
+        <property name="enabled">
+            <bool>true</bool>
+        </property>
+        <property name="label">
+            <string>Toolbar</string>
+        </property>
+        <action name="ActionNewJob"/>
+        <action name="ActionStart"/>
+        <action name="ActionAbort"/>
+        <action name="ActionRemoveJob"/>
+        <separator/>
+        <action name="ActionXfer"/>
+        <separator/>
+    </toolbar>
+</toolbars>
+<actions>
+    <action>
+        <property name="name">
+            <cstring>ActionNewJob</cstring>
+        </property>
+        <property name="iconSet">
+            <iconset>stock_insert-slide.png</iconset>
+        </property>
+        <property name="text">
+            <string>New job</string>
+        </property>
+        <property name="toolTip">
+            <string>New job</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>ActionStart</cstring>
+        </property>
+        <property name="iconSet">
+            <iconset>stock_tools-macro.png</iconset>
+        </property>
+        <property name="text">
+            <string>Start transcoding</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>ActionAbort</cstring>
+        </property>
+        <property name="enabled">
+            <bool>false</bool>
+        </property>
+        <property name="iconSet">
+            <iconset>stock_stop.png</iconset>
+        </property>
+        <property name="text">
+            <string>Stop</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>ActionRemoveJob</cstring>
+        </property>
+        <property name="iconSet">
+            <iconset>stock_calc-cancel.png</iconset>
+        </property>
+        <property name="text">
+            <string>Remove job</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>ActionXfer</cstring>
+        </property>
+        <property name="iconSet">
+            <iconset>stock_refresh.png</iconset>
+        </property>
+        <property name="text">
+            <string>Action</string>
+        </property>
+    </action>
+</actions>
+<connections>
+    <connection>
+        <sender>ActionNewJob</sender>
+        <signal>activated()</signal>
+        <receiver>MainWin</receiver>
+        <slot>newJob()</slot>
+    </connection>
+    <connection>
+        <sender>ActionStart</sender>
+        <signal>activated()</signal>
+        <receiver>MainWin</receiver>
+        <slot>startQueue()</slot>
+    </connection>
+    <connection>
+        <sender>ActionAbort</sender>
+        <signal>activated()</signal>
+        <receiver>MainWin</receiver>
+        <slot>abortQueue()</slot>
+    </connection>
+    <connection>
+        <sender>ActionRemoveJob</sender>
+        <signal>activated()</signal>
+        <receiver>MainWin</receiver>
+        <slot>deleteQueue()</slot>
+    </connection>
+    <connection>
+        <sender>ActionXfer</sender>
+        <signal>activated()</signal>
+        <receiver>MainWin</receiver>
+        <slot>startXfer()</slot>
+    </connection>
+</connections>
+<includes>
+    <include location="local" impldecl="in implementation">mainwin.ui.h</include>
+</includes>
+<slots>
+    <slot>newJob()</slot>
+    <slot>startQueue()</slot>
+    <slot>abortQueue()</slot>
+    <slot>deleteQueue()</slot>
+    <slot>startXfer()</slot>
+</slots>
+<functions>
+    <function specifier="non virtual">updateProgress( int percent, int frame )</function>
+</functions>
+<pixmapinproject/>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>
