@@ -382,8 +382,13 @@
 <includes>
     <include location="local" impldecl="in implementation">xferwin.ui.h</include>
 </includes>
+<variables>
+    <variable access="private">QString m_mount_point;</variable>
+</variables>
 <functions>
     <function>init()</function>
+    <function specifier="non virtual">refreshPSP()</function>
+    <function specifier="non virtual">refreshLocal()</function>
 </functions>
 <pixmapinproject/>
 <layoutdefaults spacing="6" margin="11"/>

@@ -88,6 +88,36 @@ class CJobQueue {
 		
 };
 
+class CPSPMovie {
+		int m_id;
+		int m_size;
+		bool m_have_thumbnail;
+		QString m_thmb_name, m_movie_name;
+		QString m_str_size;
+		bool DoCopy(const QString &source, const QString &target);
+	public:
+		CPSPMovie(int id);
+		CPSPMovie() {  /* for stl */ }
+		
+		bool TransferTo(const QString &target_dir);
+		
+		const QString &Name() { return m_movie_name; };
+		const QString &Size() { return m_str_size; };
+		
+		int Id() { return m_id; }
+};
+
+class CPSPMovieLocalList {
+		std::map<int, CPSPMovie> m_movie_set;
+	public:
+		CPSPMovieLocalList(const QString &dir);
+		
+		typedef std::map<int, CPSPMovie>::iterator CPSPMovieListIt;
+		
+		CPSPMovieListIt Begin() { return m_movie_set.begin(); }
+		CPSPMovieListIt End() { return m_movie_set.end(); }
+};
+
 extern CJobQueue g_job_queue;
 
 class CAppSettings {

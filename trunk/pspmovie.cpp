@@ -229,8 +229,7 @@ QProcess *CTranscode::Start(CJobControlImp *proc, const QString &dst)
 	proc->AddProcessArg("-title");
 	proc->AddProcessArg(m_title);
 
-	QString target_path = QDir::cleanDirPath(GetAppSettings()->TargetDir() +
-		QDir::convertSeparators("/") + dst);
+	QString target_path = GetAppSettings()->TargetDir() + dst;
 		
 	//proc->AddProcessArg("MP_ROOT/100MNV01/M4V00010.MP4");
 	proc->AddProcessArg(target_path);
@@ -265,8 +264,7 @@ QProcess *CTranscode::StartThumbnail(CJobControlImp *proc, const QString &dst)
 	proc->AddProcessArg("-f");
 	proc->AddProcessArg("mjpeg");
 
-	QString target_path = QDir::cleanDirPath(GetAppSettings()->TargetDir() +
-		QDir::convertSeparators("/") + dst);
+	QString target_path = GetAppSettings()->TargetDir() + dst;
 		
 	proc->AddProcessArg(target_path);
     return proc->Start();
@@ -434,7 +432,8 @@ CAppSettings::~CAppSettings()
 int CAppSettings::GetNewOutputNameIdx() const
 {
 	for(int i = 0 ; i < 999999; i++) {
-		QString next_name = QString("M4V%1.MP4").arg(i, 6, 10);
+		QString next_name;
+		next_name.sprintf("M4V%5d.MP4", i);
 		if ( !QFile::exists(next_name) ) {
 			return i;
 		}
@@ -452,6 +451,66 @@ QString CAppSettings::Get_FFMPEG()
 #ifdef Q_WS_WIN
 #endif
 	return ffmpeg;
+}
+
+CPSPMovie::CPSPMovie(int id)
+{
+	m_id = id;
+
+	m_thmb_name.sprintf("M4V%5d.THM", m_id);
+	m_movie_name.sprintf("M4V%5d.MP4", m_id);
+	
+	m_have_thumbnail = QFile::exists(GetAppSettings()->TargetDir() + m_thmb_name);
+	QFile f(GetAppSettings()->TargetDir() + m_movie_name);
+	m_size = f.size();
+}
+
+bool CPSPMovie::DoCopy(const QString &source, const QString &target)
+{
+	QFile src(source);
+	QFile dst(target);
+	if ( src.open(IO_Raw) ) {
+		return false;
+	}
+	if ( dst.open(IO_Raw | IO_Truncate) ) {
+		return false;
+	}
+	char buffer[4096];
+	while( !src.atEnd() ) {
+		Q_LONG sz = src.readBlock(buffer, sizeof(buffer));
+		if ( sz == -1 ) {
+			return false;
+		}
+		dst.writeBlock(buffer, sz);
+	}
+	return true;
+}
+
+bool CPSPMovie::TransferTo(const QString &target_dir)
+{
+	// movie going first
+	if ( !DoCopy(GetAppSettings()->TargetDir() + m_movie_name,
+			target_dir + m_movie_name) ) {
+		return false;
+	}
+	if ( !DoCopy(GetAppSettings()->TargetDir() + m_thmb_name,
+			target_dir + m_thmb_name) ) {
+		return false;
+	}
+
+	return true;
+}
+
+CPSPMovieLocalList::CPSPMovieLocalList(const QString &dir)
+{
+	for(int i = 0 ; i < 999999; i++) {
+		QString next_name;
+		next_name.sprintf("M4V%5d.MP4", i);
+		if ( !QFile::exists(dir + next_name) ) {
+			CPSPMovie m(i);
+			m_movie_set[i] = m;
+		}
+	}
 }
 
 int main( int argc, char **argv )
