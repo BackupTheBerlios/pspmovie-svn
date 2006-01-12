@@ -9,6 +9,11 @@
 ** These will automatically be called by the form's constructor and
 ** destructor.
 *****************************************************************************/
+#include <qcombobox.h> 
+#include <qcheckbox.h> 
+#include <qlineedit.h> 
+#include <qmessagebox.h>
+
 #include "pspdetect.h"
 #include "pspmovie.h"
 
@@ -33,14 +38,15 @@ void XferWin::init()
 	m_mount_point = "";
     }
     
-    
+    refreshPSP();
+    refreshLocal();
 }
 
 
 void XferWin::refreshPSP()
 {
-    CPSPMovieLocalList psp_list(m_mount_point);
-    for(CPSPMovieLocalList::CPSPMovieListIt i = psp_list.Begin(); i != psp_list.End(); i++) {
+    m_psp_list = new CPSPMovieLocalList(m_mount_point);
+    for(CPSPMovieLocalList::CPSPMovieListIt i = m_psp_list->Begin(); i != m_psp_list->End(); i++) {
 	CPSPMovie &m = i->second;
 	new CXferListItem(listView_PSP, m.Id(), m.Name(), m.Size());
     }
@@ -49,9 +55,37 @@ void XferWin::refreshPSP()
 
 void XferWin::refreshLocal()
 {
-    CPSPMovieLocalList psp_list(GetAppSettings()->TargetDir());
-    for(CPSPMovieLocalList::CPSPMovieListIt i = psp_list.Begin(); i != psp_list.End(); i++) {
+    m_local_list = new CPSPMovieLocalList(GetAppSettings()->TargetDir().path());
+    for(CPSPMovieLocalList::CPSPMovieListIt i = m_local_list->Begin(); i != m_local_list->End(); i++) {
 	CPSPMovie &m = i->second;
-	new CXferListItem(listView_PSP, m.Id(), m.Name(), m.Size());
+	new CXferListItem(listView_Local, m.Id(), m.Name(), m.Size());
     }
+}
+
+
+void XferWin::toPSP_clicked()
+{
+    CXferListItem *it = (CXferListItem *)listView_Local->selectedItem();
+    if ( !it ) {
+	QMessageBox::information(this, "No file selected", "Please select file to transfer");
+	return;
+    }
+}
+
+
+void XferWin::toDesktop_clicked()
+{
+
+}
+
+
+void XferWin::browsePSP_clicked()
+{
+
+}
+
+
+void XferWin::deleteFile_clicked()
+{
+
 }

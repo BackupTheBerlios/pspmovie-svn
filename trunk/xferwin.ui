@@ -78,20 +78,6 @@
                                     <bool>true</bool>
                                 </property>
                             </column>
-                        <item>
-                            <property name="text">
-                                <string>M4V000001</string>
-                            </property>
-                            <property name="text">
-                                <string>123Mb</string>
-                            </property>
-                            <property name="pixmap">
-                                <pixmap>editcopy</pixmap>
-                            </property>
-                            <property name="pixmap">
-                                <pixmap></pixmap>
-                            </property>
-                        </item>
                             <property name="name">
                                 <cstring>listView_Local</cstring>
                             </property>
@@ -172,20 +158,6 @@
                                     <bool>true</bool>
                                 </property>
                             </column>
-                        <item>
-                            <property name="text">
-                                <string>M4V000002</string>
-                            </property>
-                            <property name="text">
-                                <string>123Mb</string>
-                            </property>
-                            <property name="pixmap">
-                                <pixmap></pixmap>
-                            </property>
-                            <property name="pixmap">
-                                <pixmap></pixmap>
-                            </property>
-                        </item>
                             <property name="name">
                                 <cstring>listView_PSP</cstring>
                             </property>
@@ -379,12 +351,45 @@
 </widget>
 <toolbars>
 </toolbars>
+<connections>
+    <connection>
+        <sender>pushButton7</sender>
+        <signal>clicked()</signal>
+        <receiver>XferWin</receiver>
+        <slot>toPSP_clicked()</slot>
+    </connection>
+    <connection>
+        <sender>pushButton8</sender>
+        <signal>clicked()</signal>
+        <receiver>XferWin</receiver>
+        <slot>toDesktop_clicked()</slot>
+    </connection>
+    <connection>
+        <sender>pushButton13</sender>
+        <signal>clicked()</signal>
+        <receiver>XferWin</receiver>
+        <slot>browsePSP_clicked()</slot>
+    </connection>
+    <connection>
+        <sender>pushButton8_2</sender>
+        <signal>clicked()</signal>
+        <receiver>XferWin</receiver>
+        <slot>deleteFile_clicked()</slot>
+    </connection>
+</connections>
 <includes>
     <include location="local" impldecl="in implementation">xferwin.ui.h</include>
 </includes>
 <variables>
     <variable access="private">QString m_mount_point;</variable>
+    <variable access="private">class CPSPMovieLocalList *m_local_list, *m_psp_list;</variable>
 </variables>
+<slots>
+    <slot>toPSP_clicked()</slot>
+    <slot>toDesktop_clicked()</slot>
+    <slot>browsePSP_clicked()</slot>
+    <slot>deleteFile_clicked()</slot>
+</slots>
 <functions>
     <function>init()</function>
     <function specifier="non virtual">refreshPSP()</function>

@@ -97,6 +97,8 @@ class CPSPMovie {
 		bool DoCopy(const QString &source, const QString &target);
 	public:
 		CPSPMovie(int id);
+		CPSPMovie(QFileInfo *info);
+		
 		CPSPMovie() {  /* for stl */ }
 		
 		bool TransferTo(const QString &target_dir);
@@ -116,6 +118,8 @@ class CPSPMovieLocalList {
 		
 		CPSPMovieListIt Begin() { return m_movie_set.begin(); }
 		CPSPMovieListIt End() { return m_movie_set.end(); }
+		
+		void Transfer(int id, const QString &dest);
 };
 
 extern CJobQueue g_job_queue;
@@ -123,10 +127,10 @@ extern CJobQueue g_job_queue;
 class CAppSettings {
 		QSettings m_settings;
 		
-		QString m_app_dir;
+		QString m_app_dir_path;
 		
-		QString m_tmp_dir;
-		QString m_psp_dir;
+		QString m_tmp_dir_path, m_psp_dir_path;
+		QDir m_tmp_dir;
 		
 		QString m_ffmpeg_path;
 
@@ -136,7 +140,7 @@ class CAppSettings {
 		~CAppSettings();
 		
 		QString ffmpeg() { return m_ffmpeg_path; }
-		const QString TargetDir() const { return m_tmp_dir; } 
+		const QDir &TargetDir() const { return m_tmp_dir; } 
 		
 		int GetNewOutputNameIdx() const;
 			

@@ -229,7 +229,7 @@ QProcess *CTranscode::Start(CJobControlImp *proc, const QString &dst)
 	proc->AddProcessArg("-title");
 	proc->AddProcessArg(m_title);
 
-	QString target_path = GetAppSettings()->TargetDir() + dst;
+	QString target_path = GetAppSettings()->TargetDir().filePath(dst);
 		
 	//proc->AddProcessArg("MP_ROOT/100MNV01/M4V00010.MP4");
 	proc->AddProcessArg(target_path);
@@ -264,7 +264,7 @@ QProcess *CTranscode::StartThumbnail(CJobControlImp *proc, const QString &dst)
 	proc->AddProcessArg("-f");
 	proc->AddProcessArg("mjpeg");
 
-	QString target_path = GetAppSettings()->TargetDir() + dst;
+	QString target_path = GetAppSettings()->TargetDir().filePath(dst);
 		
 	proc->AddProcessArg(target_path);
     return proc->Start();
@@ -294,7 +294,7 @@ bool CJobQueue::Start()
 	
 	m_curr_file_id = GetAppSettings()->GetNewOutputNameIdx();
 	QString target;
-	target.sprintf("M4V%5d.MP4", m_curr_file_id);
+	target.sprintf("M4V%05d.MP4", m_curr_file_id);
 	m_curr_process = new_job.Start(job_ctrl, target);
 	
 	return true;
@@ -303,6 +303,7 @@ bool CJobQueue::Start()
 bool CJobQueue::Abort()
 {
 	m_curr_process->writeToStdin("q");
+	g_main_win->updateProgress(0, 0);
 	return true;
 }
 
@@ -367,7 +368,7 @@ void CJobQueue::TranscodeProcessDone()
 {
 	printf("TranscodeProcessDone\n");
 	QString target;
-	target.sprintf("M4V%5d.THM", m_curr_file_id);
+	target.sprintf("M4V%05d.THM", m_curr_file_id);
 
 	CTranscode &new_job = m_queue.front();
 
@@ -389,6 +390,8 @@ void CJobQueue::ThumbnailProcessDone()
 {
 	// done with it - remove from queue
 	m_queue.pop_front();
+
+	g_main_win->updateProgress(0, 0);
 }
 
 //
@@ -405,24 +408,27 @@ CAppSettings::CAppSettings()
 {
 	m_settings.setPath("pspmovie.berlios.de", "pspmovie");
 	
-	m_app_dir = QDir::cleanDirPath(QDir::homeDirPath() + QDir::convertSeparators("/.pspmovie/"));
-	m_settings.insertSearchPath( QSettings::Unix, m_app_dir);
+	m_app_dir_path = QDir::cleanDirPath(QDir::homeDirPath() + QDir::convertSeparators("/.pspmovie/"));
+	m_settings.insertSearchPath( QSettings::Unix, m_app_dir_path);
 	
-	QDir dir(m_app_dir);
+	QDir dir(m_app_dir_path);
 	if ( !dir.exists() ) {
-		if ( !dir.mkdir(m_app_dir) ) {
+		if ( !dir.mkdir(m_app_dir_path) ) {
 			QMessageBox::critical(0, "Error", "unable to create application directory");
 			qApp->exit(-1);
 		}
 	}
-	m_tmp_dir = QDir::cleanDirPath(m_app_dir + QDir::convertSeparators("/100MNV01/"));
-	QDir tmp_dir(m_tmp_dir);
-	if ( !tmp_dir.exists() ) {
-		if ( !tmp_dir.mkdir(m_tmp_dir) ) {
+	m_tmp_dir_path = QDir::cleanDirPath(m_app_dir_path + QDir::convertSeparators("/100MNV01/"));
+	
+	m_tmp_dir.setPath(m_tmp_dir_path);
+	if ( !m_tmp_dir.exists() ) {
+		if ( !m_tmp_dir.mkdir(m_tmp_dir_path) ) {
 			QMessageBox::critical(0, "Error", "unable to create output directory");
-			m_tmp_dir = QString(0);
+			m_tmp_dir_path = QString(0);
 		}
 	}
+
+	printf("Tmp dir -> [%s]\n", (const char *)m_tmp_dir_path);
 }
 
 CAppSettings::~CAppSettings()
@@ -431,10 +437,10 @@ CAppSettings::~CAppSettings()
 
 int CAppSettings::GetNewOutputNameIdx() const
 {
-	for(int i = 0 ; i < 999999; i++) {
+	for(int i = 1 ; i < 999999; i++) {
 		QString next_name;
-		next_name.sprintf("M4V%5d.MP4", i);
-		if ( !QFile::exists(next_name) ) {
+		next_name.sprintf("M4V%05d.MP4", i);
+		if ( !QFile::exists(GetAppSettings()->TargetDir().filePath(next_name)) ) {
 			return i;
 		}
 	}
@@ -457,12 +463,26 @@ CPSPMovie::CPSPMovie(int id)
 {
 	m_id = id;
 
-	m_thmb_name.sprintf("M4V%5d.THM", m_id);
-	m_movie_name.sprintf("M4V%5d.MP4", m_id);
+	m_thmb_name.sprintf("M4V%05d.THM", m_id);
+	m_movie_name.sprintf("M4V%05d.MP4", m_id);
 	
-	m_have_thumbnail = QFile::exists(GetAppSettings()->TargetDir() + m_thmb_name);
-	QFile f(GetAppSettings()->TargetDir() + m_movie_name);
+	m_have_thumbnail = QFile::exists(GetAppSettings()->TargetDir().filePath(m_thmb_name));
+	QFile f(GetAppSettings()->TargetDir().filePath(m_movie_name));
 	m_size = f.size();
+}
+
+CPSPMovie::CPSPMovie(QFileInfo *info)
+{
+	QRegExp id_exp("M4V(\\d{5})");
+	if ( !id_exp.exactMatch(info->baseName()) ) {
+		m_id = -1;
+		return;
+	}
+	m_id = id_exp.cap(1).toInt();
+	m_movie_name = info->baseName() + ".MP4";
+	m_thmb_name = info->baseName() + ".THM";
+	m_have_thumbnail = QFile::exists(info->absFilePath() + m_thmb_name);
+	m_size = info->size();
 }
 
 bool CPSPMovie::DoCopy(const QString &source, const QString &target)
@@ -489,11 +509,11 @@ bool CPSPMovie::DoCopy(const QString &source, const QString &target)
 bool CPSPMovie::TransferTo(const QString &target_dir)
 {
 	// movie going first
-	if ( !DoCopy(GetAppSettings()->TargetDir() + m_movie_name,
+	if ( !DoCopy(GetAppSettings()->TargetDir().filePath(m_movie_name),
 			target_dir + m_movie_name) ) {
 		return false;
 	}
-	if ( !DoCopy(GetAppSettings()->TargetDir() + m_thmb_name,
+	if ( !DoCopy(GetAppSettings()->TargetDir().filePath(m_thmb_name),
 			target_dir + m_thmb_name) ) {
 		return false;
 	}
@@ -501,16 +521,27 @@ bool CPSPMovie::TransferTo(const QString &target_dir)
 	return true;
 }
 
-CPSPMovieLocalList::CPSPMovieLocalList(const QString &dir)
+CPSPMovieLocalList::CPSPMovieLocalList(const QString &dir_path)
 {
-	for(int i = 0 ; i < 999999; i++) {
-		QString next_name;
-		next_name.sprintf("M4V%5d.MP4", i);
-		if ( !QFile::exists(dir + next_name) ) {
-			CPSPMovie m(i);
-			m_movie_set[i] = m;
-		}
+	QDir dir(dir_path);
+	dir.setNameFilter("M4V*.MP4");
+	const QFileInfoList *files = dir.entryInfoList(QDir::Files | QDir::NoSymLinks | QDir::Readable);
+	if ( files ) {
+		QFileInfoListIterator it(*files);
+		QFileInfo *fi;
+	    while ( ( fi = it.current() ) != 0 ) {
+	    	CPSPMovie m(fi);
+	    	m_movie_set[m.Id()] = m;
+	    	++it;
+	    }
 	}
+}
+
+void CPSPMovieLocalList::Transfer(int id, const QString &dest)
+{
+	Q_ASSERT ( m_movie_set.count(id) );
+	CPSPMovie &m = m_movie_set[id];
+	m.TransferTo(dest);
 }
 
 int main( int argc, char **argv )
@@ -521,6 +552,8 @@ int main( int argc, char **argv )
 	
 	app.setMainWidget(&mainwin);
 	mainwin.show();
+	
+	GetAppSettings();
 	
 	return app.exec();
 }
