@@ -1,6 +1,7 @@
 #include <qapplication.h>
 #include <qmessagebox.h>
 #include <qregexp.h>
+#include <qprogressdialog.h>
 
 #include <math.h>
 
@@ -136,8 +137,9 @@ CTranscode::CTranscode(QString &src, QString &title, QString &size,
 void CTranscode::CheckInputCallback(void *ptr, const char *s)
 {
 	CTranscode *This = (CTranscode *)ptr;
-	//printf("XXX0 = [%s]\n", s);
-	if ( s && !strncmp(s, "Input #0", strlen("Input #0")) ) {
+	printf("InCheck = [%s]\n", s);
+	//if ( s && !strncmp(s, "Input #0", strlen("Input #0")) ) {
+	if ( s && strstr(s, "Input #0") ) {
 		This->m_duration = -1;
 		char *p = strstr(s, "Stream #0");
 		if ( !p ) {
@@ -471,61 +473,96 @@ CPSPMovie::CPSPMovie(int id)
 	m_size = f.size();
 }
 
-CPSPMovie::CPSPMovie(QFileInfo *info)
+CPSPMovie::CPSPMovie(QFileInfo *info) : m_dir(info->dirPath(TRUE))
 {
-	QRegExp id_exp("M4V(\\d{5})");
+	QRegExp id_exp("M4V(\\d{5})", FALSE);
 	if ( !id_exp.exactMatch(info->baseName()) ) {
 		m_id = -1;
 		return;
 	}
 	m_id = id_exp.cap(1).toInt();
-	m_movie_name = info->baseName() + ".MP4";
-	m_thmb_name = info->baseName() + ".THM";
+	m_movie_name = info->baseName().upper() + ".MP4";
+	m_thmb_name = info->baseName().upper() + ".THM";
+
 	m_have_thumbnail = QFile::exists(info->absFilePath() + m_thmb_name);
 	m_size = info->size();
 }
 
-bool CPSPMovie::DoCopy(const QString &source, const QString &target)
+bool CPSPMovie::DoCopy(QWidget *parent, const QString &source, const QString &target)
 {
 	QFile src(source);
 	QFile dst(target);
-	if ( src.open(IO_Raw) ) {
+	if ( !src.open(IO_Raw | IO_ReadOnly ) ) {
 		return false;
 	}
-	if ( dst.open(IO_Raw | IO_Truncate) ) {
+	if ( !dst.open(IO_Raw | IO_WriteOnly | IO_Truncate) ) {
 		return false;
 	}
-	char buffer[4096];
+
+	const int bufsize = 0x10000;
+	int num_of_steps = (src.size() / bufsize) + 1;
+	QProgressDialog progress(QString("Copying file: ") + source,
+		"Abort Copy", num_of_steps, parent, "progress", TRUE);
+
+	char *buffer = new char[bufsize];
+	int curr_step = 0;
 	while( !src.atEnd() ) {
-		Q_LONG sz = src.readBlock(buffer, sizeof(buffer));
+		
+	    progress.setProgress(curr_step);
+	    qApp->processEvents();
+	
+	    if ( progress.wasCanceled() ) {
+	        break;
+	    }
+	    
+		Q_LONG sz = src.readBlock(buffer, bufsize);
 		if ( sz == -1 ) {
+			delete buffer;
 			return false;
 		}
 		dst.writeBlock(buffer, sz);
+		curr_step++;
 	}
+	sync();
+	delete buffer;
+
 	return true;
 }
 
-bool CPSPMovie::TransferTo(const QString &target_dir)
+bool CPSPMovie::TransferTo(QWidget *parent, const QString &target_dir)
 {
+	QDir trgdir(target_dir);
 	// movie going first
-	if ( !DoCopy(GetAppSettings()->TargetDir().filePath(m_movie_name),
-			target_dir + m_movie_name) ) {
+	if ( !DoCopy(parent, m_dir.filePath(m_movie_name),
+			trgdir.filePath(m_movie_name)) ) {
 		return false;
 	}
-	if ( !DoCopy(GetAppSettings()->TargetDir().filePath(m_thmb_name),
-			target_dir + m_thmb_name) ) {
+	if ( !DoCopy(parent, m_dir.filePath(m_thmb_name),
+			trgdir.filePath(m_thmb_name)) ) {
 		return false;
 	}
 
 	return true;
 }
 
-CPSPMovieLocalList::CPSPMovieLocalList(const QString &dir_path)
+bool CPSPMovie::Delete()
 {
-	QDir dir(dir_path);
-	dir.setNameFilter("M4V*.MP4");
-	const QFileInfoList *files = dir.entryInfoList(QDir::Files | QDir::NoSymLinks | QDir::Readable);
+	if ( !QFile::remove(m_dir.filePath(m_movie_name)) ) {
+		return false;
+	}
+	if ( !QFile::remove(m_dir.filePath(m_thmb_name)) ) {
+		return false;
+	}
+	return true;
+}
+
+CPSPMovieLocalList::CPSPMovieLocalList(const QString &dir_path) : m_source_dir(dir_path)
+{
+	printf("Loading list from [%s]\n", (const char *)dir_path);
+
+	// on vfat it's shown in lower case !
+	m_source_dir.setNameFilter("M4V*.MP4 m4v*.mp4");
+	const QFileInfoList *files = m_source_dir.entryInfoList(QDir::Files | QDir::NoSymLinks | QDir::Readable);
 	if ( files ) {
 		QFileInfoListIterator it(*files);
 		QFileInfo *fi;
@@ -537,11 +574,22 @@ CPSPMovieLocalList::CPSPMovieLocalList(const QString &dir_path)
 	}
 }
 
-void CPSPMovieLocalList::Transfer(int id, const QString &dest)
+bool CPSPMovieLocalList::Transfer(QWidget *parent, int id, const QString &dest)
 {
 	Q_ASSERT ( m_movie_set.count(id) );
 	CPSPMovie &m = m_movie_set[id];
-	m.TransferTo(dest);
+	return m.TransferTo(parent, dest);
+}
+
+bool CPSPMovieLocalList::Delete(int id)
+{
+	Q_ASSERT ( m_movie_set.count(id) );
+	CPSPMovie &m = m_movie_set[id];
+	if ( m.Delete() ) {
+		m_movie_set.erase(id);
+		return true;
+	}
+	return false;
 }
 
 int main( int argc, char **argv )

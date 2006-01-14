@@ -93,15 +93,17 @@ class CPSPMovie {
 		int m_size;
 		bool m_have_thumbnail;
 		QString m_thmb_name, m_movie_name;
+		QDir m_dir;
 		QString m_str_size;
-		bool DoCopy(const QString &source, const QString &target);
+		bool DoCopy(QWidget *parent, const QString &source, const QString &target);
 	public:
 		CPSPMovie(int id);
 		CPSPMovie(QFileInfo *info);
 		
 		CPSPMovie() {  /* for stl */ }
 		
-		bool TransferTo(const QString &target_dir);
+		bool TransferTo(QWidget *parent, const QString &target_dir);
+		bool Delete();
 		
 		const QString &Name() { return m_movie_name; };
 		const QString &Size() { return m_str_size; };
@@ -111,6 +113,7 @@ class CPSPMovie {
 
 class CPSPMovieLocalList {
 		std::map<int, CPSPMovie> m_movie_set;
+		QDir m_source_dir;
 	public:
 		CPSPMovieLocalList(const QString &dir);
 		
@@ -119,7 +122,8 @@ class CPSPMovieLocalList {
 		CPSPMovieListIt Begin() { return m_movie_set.begin(); }
 		CPSPMovieListIt End() { return m_movie_set.end(); }
 		
-		void Transfer(int id, const QString &dest);
+		bool Transfer(QWidget *parent, int id, const QString &dest);
+		bool Delete(int id);
 };
 
 extern CJobQueue g_job_queue;

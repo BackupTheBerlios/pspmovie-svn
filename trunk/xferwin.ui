@@ -107,6 +107,9 @@
                             <property name="acceptDrops">
                                 <bool>true</bool>
                             </property>
+                            <property name="selectionMode">
+                                <enum>Extended</enum>
+                            </property>
                         </widget>
                     </vbox>
                 </widget>
@@ -166,6 +169,9 @@
                                     <width>0</width>
                                     <height>200</height>
                                 </size>
+                            </property>
+                            <property name="selectionMode">
+                                <enum>Extended</enum>
                             </property>
                         </widget>
                     </grid>
@@ -287,7 +293,7 @@
         </widget>
         <widget class="QGroupBox" row="1" column="0">
             <property name="name">
-                <cstring>groupBox3_2</cstring>
+                <cstring>groupBox_PSP</cstring>
             </property>
             <property name="title">
                 <string>PSP location</string>
@@ -376,24 +382,44 @@
         <receiver>XferWin</receiver>
         <slot>deleteFile_clicked()</slot>
     </connection>
+    <connection>
+        <sender>listView_Local</sender>
+        <signal>selectionChanged()</signal>
+        <receiver>XferWin</receiver>
+        <slot>listView_Local_selectionChanged()</slot>
+    </connection>
+    <connection>
+        <sender>listView_PSP</sender>
+        <signal>selectionChanged()</signal>
+        <receiver>XferWin</receiver>
+        <slot>listView_PSP_selectionChanged()</slot>
+    </connection>
 </connections>
 <includes>
     <include location="local" impldecl="in implementation">xferwin.ui.h</include>
 </includes>
+<forwards>
+    <forward>class CPSPMovieLocalList</forward>
+</forwards>
 <variables>
+    <variable access="private">CPSPMovieLocalList *m_local_list, *m_psp_list;</variable>
     <variable access="private">QString m_mount_point;</variable>
-    <variable access="private">class CPSPMovieLocalList *m_local_list, *m_psp_list;</variable>
 </variables>
 <slots>
+    <slot>refreshPSP()</slot>
+    <slot>refreshLocal()</slot>
     <slot>toPSP_clicked()</slot>
     <slot>toDesktop_clicked()</slot>
     <slot>browsePSP_clicked()</slot>
     <slot>deleteFile_clicked()</slot>
+    <slot>listView_Local_selectionChanged()</slot>
+    <slot>listView_PSP_selectionChanged()</slot>
 </slots>
 <functions>
-    <function>init()</function>
-    <function specifier="non virtual">refreshPSP()</function>
-    <function specifier="non virtual">refreshLocal()</function>
+    <function access="private" specifier="non virtual">init()</function>
+    <function returnType="CPSPMovieLocalList *">refreshList( const QString &amp; dir, QListView * listview )</function>
+    <function specifier="non virtual">deleteSelected( QListView * listview, CPSPMovieLocalList * list )</function>
+    <function access="protected">closeEvent( QCloseEvent * e )</function>
 </functions>
 <pixmapinproject/>
 <layoutdefaults spacing="6" margin="11"/>

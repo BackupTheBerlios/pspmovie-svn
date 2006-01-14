@@ -19,8 +19,6 @@
 #include "newjobdialog.h"
 #include "xferwin.h"
 
-XferWin *xfer_win = 0;
-
 class CQueueListViewItem : public QListViewItem {
     int m_id;
 public:
@@ -29,7 +27,7 @@ public:
     {
 	m_id = data.Id();
     }
-    int rtti()
+    int Id()
     {
 	return m_id;
     }
@@ -110,7 +108,7 @@ void MainWin::deleteQueue()
 	QMessageBox::information(this, "No job selected",
 				 "Please select job you want to remove from queue");
     } else {
-	 bool res = g_job_queue.Remove(i->rtti());
+	 bool res = g_job_queue.Remove(i->Id());
 	 Q_ASSERT(res);
 	delete i;
     }
@@ -119,8 +117,14 @@ void MainWin::deleteQueue()
 
 void MainWin::startXfer()
 {
-    if ( !xfer_win ) {
-	xfer_win = new XferWin(this);
+    if ( !m_xfer_win ) {
+	m_xfer_win = new XferWin(this);
     }
-    xfer_win->show();
+    m_xfer_win->show();
+}
+
+
+void MainWin::init()
+{
+    m_xfer_win = 0;
 }
