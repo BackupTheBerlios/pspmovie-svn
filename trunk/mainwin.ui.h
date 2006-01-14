@@ -23,7 +23,7 @@ class CQueueListViewItem : public QListViewItem {
     int m_id;
 public:
     CQueueListViewItem(QListView *parent, CTranscode &data) : 
-	    QListViewItem(parent, data.ShortName(), data.StrDuration())
+	    QListViewItem(parent, data.ShortName(), data.StrDuration(), data.Target())
     {
 	m_id = data.Id();
     }
@@ -41,18 +41,38 @@ void MainWin::newJob()
     }
     
     QString src = dlg.lineEdit_File->text();
-    QString title = dlg.lineEdit_Title->text();
     QString size = dlg.comboBox_TargetSize->currentText();
     QString snd_bitrate = dlg.comboBox_TargetSound->currentText();
     QString video_bitrate = dlg.comboBox_TargetVideo->currentText();
     bool fix_aspect = dlg.checkBox_FixAspect->isChecked();
     
-    CTranscode new_job(src, title, size, snd_bitrate, video_bitrate, fix_aspect);
+    CTranscode new_job(src, size, snd_bitrate, video_bitrate, fix_aspect);
     if ( g_job_queue.Add(new_job) ) {
 	new CQueueListViewItem(listView_Queue, new_job);
     }
 }
 
+void MainWin::enableStart( bool enable )
+{
+    ActionStart->setEnabled(enable);
+    ActionAbort->setEnabled(!enable);
+}
+
+
+void MainWin::removeFromQueue( int id )
+{
+    QListViewItemIterator it(listView_Queue);
+    printf("RM = %d\n",  id);
+    while ( it.current() ) {
+	CQueueListViewItem *item = (CQueueListViewItem *)it.current();
+	printf("item = %d\n",  item->Id());
+	if ( item->Id() == id ) {	    
+	    delete item;
+	    return;
+	}
+	++it;
+    }
+}
 
 void MainWin::startQueue()
 {
@@ -71,11 +91,10 @@ void MainWin::startQueue()
     lineEdit_CurrFile->setText(job->ShortName());
     lCDNumber_TotalFrames->display(job->TotalFrames());
     if ( g_job_queue.Start() ) {
-	CQueueListViewItem *i = (CQueueListViewItem *)listView_Queue->firstChild();
-	delete i;
+	//CQueueListViewItem *i = (CQueueListViewItem *)listView_Queue->firstChild();
+	//delete i;
 	
-	ActionStart->setEnabled(false);
-	ActionAbort->setEnabled(true);
+	enableStart(false);
     } else {
 	lineEdit_CurrFile->setText("");
 	lCDNumber_TotalFrames->display(0);
@@ -128,3 +147,6 @@ void MainWin::init()
 {
     m_xfer_win = 0;
 }
+
+
+
