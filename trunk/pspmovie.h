@@ -5,6 +5,8 @@
 #include <qprocess.h>
 #include <qsettings.h>
 
+QString CastToXBytes(unsigned long size);
+
 class CJobControlImp;
 class CTranscode {
 		// user choices from gui
@@ -90,7 +92,7 @@ class CJobQueue {
 
 class CPSPMovie {
 		int m_id;
-		int m_size;
+		unsigned long m_size;
 		bool m_have_thumbnail;
 		QString m_thmb_name, m_movie_name;
 		QDir m_dir;

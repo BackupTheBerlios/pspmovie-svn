@@ -10,6 +10,21 @@
 #include "mainwin.h"
 MainWin *g_main_win = 0;
 
+
+QString CastToXBytes(unsigned long size)
+{
+	QString result;
+    if ( size < 1024 ) {
+		result.sprintf("%d bytes", size);
+    } else if ( size < 1048576 ) {
+		result.sprintf("%.02f KB", size / 1024.0);
+    } else if ( size < 1073741824 ) {
+		result.sprintf("%.02f MB", size / 1048576.0);
+    } else {
+		result.sprintf("%.02f GB", size / 1073741824.0);
+    }
+    return result;
+}
 //
 // Used to bind between process and Qt framework
 //
@@ -486,6 +501,8 @@ CPSPMovie::CPSPMovie(QFileInfo *info) : m_dir(info->dirPath(TRUE))
 
 	m_have_thumbnail = QFile::exists(info->absFilePath() + m_thmb_name);
 	m_size = info->size();
+	
+	m_str_size = CastToXBytes(m_size);
 }
 
 bool CPSPMovie::DoCopy(QWidget *parent, const QString &source, const QString &target)
