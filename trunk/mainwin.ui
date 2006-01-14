@@ -22,7 +22,7 @@
     </property>
     <property name="minimumSize">
         <size>
-            <width>21</width>
+            <width>8</width>
             <height>56</height>
         </size>
     </property>
@@ -68,6 +68,17 @@
             <column>
                 <property name="text">
                     <string>Duration</string>
+                </property>
+                <property name="clickable">
+                    <bool>true</bool>
+                </property>
+                <property name="resizable">
+                    <bool>true</bool>
+                </property>
+            </column>
+            <column>
+                <property name="text">
+                    <string>Output params</string>
                 </property>
                 <property name="clickable">
                     <bool>true</bool>
@@ -348,15 +359,21 @@
 <includes>
     <include location="local" impldecl="in implementation">mainwin.ui.h</include>
 </includes>
+<variables>
+    <variable access="public">class XferWin *m_xfer_win;</variable>
+</variables>
 <slots>
     <slot>newJob()</slot>
+    <slot>removeFromQueue( int id )</slot>
     <slot>startQueue()</slot>
     <slot>abortQueue()</slot>
     <slot>deleteQueue()</slot>
     <slot>startXfer()</slot>
 </slots>
 <functions>
+    <function specifier="non virtual">enableStart( bool enable )</function>
     <function specifier="non virtual">updateProgress( int percent, int frame )</function>
+    <function access="protected">init()</function>
 </functions>
 <pixmapinproject/>
 <layoutdefaults spacing="6" margin="11"/>

@@ -10,7 +10,7 @@ QString CastToXBytes(unsigned long size);
 class CJobControlImp;
 class CTranscode {
 		// user choices from gui
-		QString m_src, m_title;
+		QString m_src;
 		QString m_short_src;
 		bool m_fix_aspect;
 		
@@ -27,6 +27,10 @@ class CTranscode {
 		float m_fps;
 		
 		static void CheckInputCallback(void *, const char *);
+		void ParseCheckInputTest();
+		
+		char *m_in_check_out_buff;
+		int m_in_check_buf_size;
 		void CheckInput();
 		
 		// for lookup in job queue
@@ -34,7 +38,7 @@ class CTranscode {
 		static int m_curr_id;
 	public:
 	
-		CTranscode(QString &src, QString &title, QString &size,
+		CTranscode(QString &src, QString &size,
 			QString &s_bitrate, QString &v_bitrate, bool fix_aspect);
 		
 		bool IsOK() { return m_duration != -1; }
@@ -51,6 +55,10 @@ class CTranscode {
 		// for display in gui
 		QString StrDuration() { return m_str_duration; }
 		QString ShortName() { return m_short_src; }
+		QString Target()
+		{
+			return m_size + " / " + m_s_bitrate + " / " + m_v_bitrate;
+		}
 };
 
 class CJobQueue {
@@ -61,6 +69,8 @@ class CJobQueue {
 		QProcess *m_curr_process;
 		int m_curr_file_id;
 		bool m_in_progress_out;
+		
+		bool m_is_aborted;
 		
 		int m_total_frames;
 		

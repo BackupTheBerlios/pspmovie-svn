@@ -2,6 +2,7 @@
 #include <qmessagebox.h>
 #include <qregexp.h>
 #include <qprogressdialog.h>
+#include <qtimer.h>
 
 #include <math.h>
 
@@ -13,7 +14,7 @@ MainWin *g_main_win = 0;
 
 QString CastToXBytes(unsigned long size)
 {
-	QString result;
+    QString result;
     if ( size < 1024 ) {
 		result.sprintf("%d bytes", size);
     } else if ( size < 1048576 ) {
@@ -109,13 +110,12 @@ void CJobControlImp::ProcessDone()
 //
 // Transcoding job
 //
-int CTranscode::m_curr_id = 1001; // Qt like it this way in rtti()
+int CTranscode::m_curr_id = 1001;
 
-CTranscode::CTranscode(QString &src, QString &title, QString &size,
+CTranscode::CTranscode(QString &src, QString &size,
 			QString &s_bitrate, QString &v_bitrate, bool fix_aspect)
 {
 	m_src = src;
-	m_title = title;
 	m_size = size;
 	m_s_bitrate = s_bitrate;
 	m_v_bitrate = v_bitrate;
@@ -149,13 +149,13 @@ CTranscode::CTranscode(QString &src, QString &title, QString &size,
 	CheckInput();
 }
 
-void CTranscode::CheckInputCallback(void *ptr, const char *s)
+void CTranscode::ParseCheckInputTest()
 {
-	CTranscode *This = (CTranscode *)ptr;
-	printf("InCheck = [%s]\n", s);
+	char *s = m_in_check_out_buff;
+	printf("InParse = [%s]\n", s);
 	//if ( s && !strncmp(s, "Input #0", strlen("Input #0")) ) {
 	if ( s && strstr(s, "Input #0") ) {
-		This->m_duration = -1;
+		m_duration = -1;
 		char *p = strstr(s, "Stream #0");
 		if ( !p ) {
 			// no stream ?
@@ -173,12 +173,12 @@ void CTranscode::CheckInputCallback(void *ptr, const char *s)
 		// parse size and fps
 		const char *cp = tok[2];
 		while( isspace(*cp) ) cp++;
-		if ( sscanf(cp, "%dx%d", &This->m_width, &This->m_height) != 2 ) {
+		if ( sscanf(cp, "%dx%d", &m_width, &m_height) != 2 ) {
 			return;
 		}
 		cp = tok[3];
 		while( isspace(*cp) ) cp++;
-		if ( sscanf(cp, "%f", &This->m_fps) != 1 ) {
+		if ( sscanf(cp, "%f", &m_fps) != 1 ) {
 			return;
 		}
 		// size and fps looks ok by now
@@ -192,10 +192,21 @@ void CTranscode::CheckInputCallback(void *ptr, const char *s)
 		if ( sscanf(p, "%d:%d:%d.%d", &h, &m, &s, &ms) != 4 ) {
 			return;
 		}
-		This->m_str_duration = QString( "%1:%2:%3.%4" )
+		m_str_duration = QString( "%1:%2:%3.%4" )
                         .arg( h ) .arg( m ) .arg( s ) .arg( ms );
 		//printf("all ok\n");
-		This->m_duration = ms + 1000*(s + 60*(m + 60*h));
+		m_duration = ms + 1000*(s + 60*(m + 60*h));
+	}
+}
+
+void CTranscode::CheckInputCallback(void *ptr, const char *s)
+{
+	CTranscode *This = (CTranscode *)ptr;
+	printf("InCheck = [%s]\n", s);
+	if ( s ) {
+		strcat(This->m_in_check_out_buff, s);
+	} else {
+		This->m_duration = -1;
 	}
 }
 
@@ -209,6 +220,10 @@ void CTranscode::CheckInput()
 	proc->AddProcessArg(m_src);
 	
 	m_duration = 0;
+	
+	m_in_check_buf_size = 0x10000;
+	m_in_check_out_buff = new char[m_in_check_buf_size];\
+	m_in_check_out_buff[0] = 0;
 	if ( !proc->Start() ) {
 		printf("start failed\n");
 	}
@@ -216,7 +231,10 @@ void CTranscode::CheckInput()
 	while ( !m_duration ) {
 		qApp->processEvents();
 	}
-	//printf("test done\n");
+	ParseCheckInputTest();
+	delete [] m_in_check_out_buff;
+	
+	printf("test done\n");
 }
 
 QProcess *CTranscode::Start(CJobControlImp *proc, const QString &dst)
@@ -244,11 +262,10 @@ QProcess *CTranscode::Start(CJobControlImp *proc, const QString &dst)
 	proc->AddProcessArg(m_size);
 	// title
 	proc->AddProcessArg("-title");
-	proc->AddProcessArg(m_title);
+	proc->AddProcessArg("PSP/"+m_src);
 
 	QString target_path = GetAppSettings()->TargetDir().filePath(dst);
 		
-	//proc->AddProcessArg("MP_ROOT/100MNV01/M4V00010.MP4");
 	proc->AddProcessArg(target_path);
     return proc->Start();
 }
@@ -266,7 +283,7 @@ QProcess *CTranscode::StartThumbnail(CJobControlImp *proc, const QString &dst)
 	proc->AddProcessArg("160x90");
 	// title
 	proc->AddProcessArg("-title");
-	proc->AddProcessArg(m_title);
+	proc->AddProcessArg(m_src);
 
 	proc->AddProcessArg("-r");
 	proc->AddProcessArg("1");
@@ -303,6 +320,9 @@ bool CJobQueue::Start()
 	if ( m_queue.empty() ) {
 		return false;
 	}
+
+	m_is_aborted = false;
+
 	CTranscode &new_job = m_queue.front();
 
 	CJobControlImp *job_ctrl = new CJobControlImp(UpdateTranscodeProgress, this);
@@ -319,7 +339,10 @@ bool CJobQueue::Start()
 
 bool CJobQueue::Abort()
 {
-	m_curr_process->writeToStdin("q");
+	//m_curr_process->writeToStdin("q");
+	m_curr_process->tryTerminate();
+	QTimer::singleShot(500, m_curr_process, SLOT( kill() ) );
+	
 	g_main_win->updateProgress(0, 0);
 	return true;
 }
@@ -405,10 +428,18 @@ void CJobQueue::UpdateThumbnailProgress(void *ptr, const char *outline)
 
 void CJobQueue::ThumbnailProcessDone()
 {
+	g_main_win->updateProgress(0, 0);
+
+	// current job done: remove from gui
+	g_main_win->removeFromQueue(m_queue.front().Id());
+
 	// done with it - remove from queue
 	m_queue.pop_front();
 
-	g_main_win->updateProgress(0, 0);
+	// start next
+	if ( m_is_aborted || !Start() ) {
+		g_main_win->enableStart(true);
+	}
 }
 
 //
