@@ -1,7 +1,7 @@
 TEMPLATE	= app
 LANGUAGE	= C++
 
-CONFIG	+= qt warn_on debug
+CONFIG	+= qt debug
 
 unix:LIBS	+= -lhal -lhal-storage
 
