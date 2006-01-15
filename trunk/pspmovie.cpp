@@ -546,6 +546,7 @@ bool CPSPMovie::DoCopy(QWidget *parent, const QString &source, const QString &ta
 	if ( !dst.open(IO_Raw | IO_WriteOnly | IO_Truncate) ) {
 		return false;
 	}
+	sync();
 
 	const int bufsize = 0x10000;
 	int num_of_steps = (src.size() / bufsize) + 1;
@@ -627,6 +628,39 @@ bool CPSPMovieLocalList::Transfer(QWidget *parent, int id, const QString &dest)
 	Q_ASSERT ( m_movie_set.count(id) );
 	CPSPMovie &m = m_movie_set[id];
 	return m.TransferTo(parent, dest);
+}
+
+bool CPSPMovieLocalList::TransferPSP(QWidget *parent, int id, const QString &base)
+{
+	Q_ASSERT ( m_movie_set.count(id) );
+	CPSPMovie &m = m_movie_set[id];
+	
+	QDir trg_dir(QDir::cleanDirPath(base + QDir::convertSeparators("/MP_ROOT/100MNV01")));
+	QDir trg_dir_backup(QDir::cleanDirPath(base + QDir::convertSeparators("/MP_ROOT/100MNV01_BACK")));
+	if ( trg_dir.exists() ) {
+		trg_dir.rename(trg_dir.path(), trg_dir_backup.path());
+	}
+	if ( !trg_dir.mkdir(trg_dir.path()) ) {
+		return false;
+	}
+	if ( !m.TransferTo(parent, trg_dir.path()) ) {
+		return false;
+	}
+	if ( trg_dir_backup.exists() ) {
+		const QFileInfoList *files = trg_dir_backup.entryInfoList(QDir::Files);
+		if ( files ) {
+			QFileInfoListIterator it(*files);
+			QFileInfo *fi;
+			while ( ( fi = it.current() ) != 0 ) {
+				trg_dir.rename(fi->filePath(), trg_dir.filePath(fi->fileName()));
+				++it;
+			}
+		}
+		if  ( !trg_dir_backup.rmdir(trg_dir_backup.path()) ) {
+			printf("remove failed\n");
+		}
+	}
+	return true;
 }
 
 bool CPSPMovieLocalList::Delete(int id)

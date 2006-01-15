@@ -135,6 +135,7 @@ class CPSPMovieLocalList {
 		CPSPMovieListIt End() { return m_movie_set.end(); }
 		
 		bool Transfer(QWidget *parent, int id, const QString &dest);
+		bool TransferPSP(QWidget *parent, int id, const QString &base);
 		bool Delete(int id);
 };
 
