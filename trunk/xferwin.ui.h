@@ -37,7 +37,8 @@ void XferWin::init()
     char error_buff[256];
     char *mount_point = find_psp_mount(error_buff, sizeof(error_buff));
     if ( mount_point ) {
-	m_mount_point = QDir::convertSeparators(QDir::cleanDirPath(QString(mount_point) + "/MP_ROOT/100MNV01/"));
+//	m_mount_point = QDir::convertSeparators(QDir::cleanDirPath(QString(mount_point) + "/MP_ROOT/100MNV01/"));
+	m_mount_point = QDir::convertSeparators(QDir::cleanDirPath(mount_point));
 	free(mount_point);
     } else {
 	m_mount_point = QDir::homeDirPath();
@@ -87,7 +88,10 @@ void XferWin::toPSP_clicked()
     QListViewItemIterator it(listView_Local, QListViewItemIterator::Selected );
     while ( it.current() ) {
 	CXferListItem *item = (CXferListItem *)it.current();
-	if ( !m_local_list->Transfer(this, item->Id(), m_mount_point) ) {
+//	if ( !m_local_list->Transfer(this, item->Id(), m_mount_point) ) {
+//	    break;
+//	}
+	if ( !m_local_list->TransferPSP(this, item->Id(), m_mount_point) ) {
 	    break;
 	}
 	++it;
