@@ -641,9 +641,13 @@ bool CPSPMovieLocalList::TransferPSP(QWidget *parent, int id, const QString &bas
 	CPSPMovie &m = m_movie_set[id];
 	
 	printf("DEBUG: copy to [%s]\n", (const char *)base);
-
-	QDir trg_dir(QDir::cleanDirPath(base + QDir::convertSeparators("/MP_ROOT/100MNV01")));
-	QDir trg_dir_backup(QDir::cleanDirPath(base + QDir::convertSeparators("/MP_ROOT/100MNV01_BACK")));
+	QDir mount_base(base);
+	QDir mp_root(mount_base.filePath("MP_ROOT"));
+	if ( !mp_root.exists() && !mp_root.mkdir(mp_root.path()) ) {
+		return false;
+	}
+	QDir trg_dir(mp_root.filePath("100MNV01"));
+	QDir trg_dir_backup(mp_root.filePath("100MNV01_BACK"));
 	if ( trg_dir.exists() ) {
 	  printf("DEBUG: rename [%s] -> [%s]\n", (const char *)trg_dir.path(),
 		 (const char *)trg_dir_backup.path());
