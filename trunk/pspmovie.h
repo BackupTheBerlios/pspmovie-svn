@@ -47,8 +47,8 @@ class CTranscode {
 		
 		int TotalFrames() { return (int)((m_duration * m_fps) / 1000.0); }
 		
-		QProcess *Start(CJobControlImp *ctrl, const QString &dst);
-		QProcess *StartThumbnail(CJobControlImp *ctrl, const QString &dst);
+		QProcess *Start(CJobControlImp *ctrl);
+		QProcess *StartThumbnail(CJobControlImp *ctrl);
 
 		int Id() { return m_id; }
 		
@@ -67,7 +67,6 @@ class CJobQueue {
 		//
 		// current ffmpeg process info
 		QProcess *m_curr_process;
-		int m_curr_file_id;
 		bool m_in_progress_out;
 		
 		bool m_is_aborted;
@@ -102,6 +101,8 @@ class CJobQueue {
 
 class CPSPMovie {
 		int m_id;
+		static int s_next_id;
+		
 		unsigned long m_size;
 		bool m_have_thumbnail;
 		QString m_thmb_name, m_movie_name;
@@ -109,12 +110,11 @@ class CPSPMovie {
 		QString m_str_size;
 		bool DoCopy(QWidget *parent, const QString &source, const QString &target);
 	public:
-		CPSPMovie(int id);
 		CPSPMovie(QFileInfo *info);
 		
 		CPSPMovie() {  /* for stl */ }
 		
-		bool TransferTo(QWidget *parent, const QString &target_dir);
+		bool TransferTo(QWidget *parent, const QString &target_dir, int trg_idx);
 		bool Delete();
 		
 		const QString &Name() { return m_movie_name; };
@@ -159,7 +159,7 @@ class CAppSettings {
 		QString ffmpeg() { return m_ffmpeg_path; }
 		const QDir &TargetDir() const { return m_tmp_dir; } 
 		
-		int GetNewOutputNameIdx() const;
+		int GetNewOutputNameIdx(const QDir &trg_dir) const;
 			
 };
 const CAppSettings *GetAppSettings();

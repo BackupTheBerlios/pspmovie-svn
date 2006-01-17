@@ -34,22 +34,33 @@ public:
 
 void XferWin::init()
 {
+    
+    m_local_list = 0;
+    m_psp_list = 0;
+    
+}
+
+
+void XferWin::refreshData()
+{
+    checkPSP();
+    
+    refreshPSP();
+    refreshLocal();
+}
+
+
+void XferWin::checkPSP()
+{
     char error_buff[256];
     char *mount_point = find_psp_mount(error_buff, sizeof(error_buff));
     if ( mount_point ) {
-//	m_mount_point = QDir::convertSeparators(QDir::cleanDirPath(QString(mount_point) + "/MP_ROOT/100MNV01/"));
 	m_mount_point = QDir::convertSeparators(QDir::cleanDirPath(mount_point));
 	free(mount_point);
     } else {
 	m_mount_point = QDir::homeDirPath();
     }
     lineEdit_Mount->setText(m_mount_point);
- 
-    m_local_list = 0;
-    m_psp_list = 0;
-    
-    refreshPSP();
-    refreshLocal();
 }
 
 
@@ -70,7 +81,8 @@ void XferWin::refreshPSP()
     if ( m_psp_list ) {
 	delete m_psp_list;
     }
-    m_psp_list = refreshList(m_mount_point, listView_PSP);
+    QDir mp_root(QDir(m_mount_point).filePath("MP_ROOT"));
+    m_psp_list = refreshList(mp_root.filePath("100MNV01"), listView_PSP);
 }
 
 
@@ -164,4 +176,5 @@ void XferWin::listView_PSP_selectionChanged()
 {
     listView_Local->clearSelection();
 }
+
 

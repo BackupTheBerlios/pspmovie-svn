@@ -406,6 +406,8 @@
     <variable access="private">QString m_mount_point;</variable>
 </variables>
 <slots>
+    <slot>refreshData()</slot>
+    <slot>checkPSP()</slot>
     <slot>refreshPSP()</slot>
     <slot>refreshLocal()</slot>
     <slot>toPSP_clicked()</slot>

@@ -25,6 +25,9 @@ public:
     CQueueListViewItem(QListView *parent, CTranscode &data) : 
 	    QListViewItem(parent, data.ShortName(), data.StrDuration(), data.Target())
     {
+	QPixmap pxm("images.jpeg");
+	//pxm.scale(30,30);
+	setPixmap(0, pxm);
 	m_id = data.Id();
     }
     int Id()
@@ -91,9 +94,6 @@ void MainWin::startQueue()
     lineEdit_CurrFile->setText(job->ShortName());
     lCDNumber_TotalFrames->display(job->TotalFrames());
     if ( g_job_queue.Start() ) {
-	//CQueueListViewItem *i = (CQueueListViewItem *)listView_Queue->firstChild();
-	//delete i;
-	
 	enableStart(false);
     } else {
 	lineEdit_CurrFile->setText("");
@@ -136,16 +136,17 @@ void MainWin::deleteQueue()
 
 void MainWin::startXfer()
 {
-    if ( !m_xfer_win ) {
-	m_xfer_win = new XferWin(this);
-    }
+//    if ( !m_xfer_win ) {
+//	m_xfer_win = new XferWin(this);
+//    }
     m_xfer_win->show();
+    m_xfer_win->refreshData();
 }
 
 
 void MainWin::init()
 {
-    m_xfer_win = 0;
+    m_xfer_win = new XferWin(this);
 }
 
 

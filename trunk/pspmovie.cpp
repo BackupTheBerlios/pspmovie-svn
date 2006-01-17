@@ -10,6 +10,7 @@
 #include "pspmovie.h"
 
 #include "mainwin.h"
+#include "xferwin.h"
 MainWin *g_main_win = 0;
 
 
@@ -17,7 +18,7 @@ QString CastToXBytes(unsigned long size)
 {
     QString result;
     if ( size < 1024 ) {
-		result.sprintf("%d bytes", size);
+		result.sprintf("%d bytes", (int)size);
     } else if ( size < 1048576 ) {
 		result.sprintf("%.02f KB", size / 1024.0);
     } else if ( size < 1073741824 ) {
@@ -223,7 +224,7 @@ void CTranscode::CheckInput()
 	m_duration = 0;
 	
 	m_in_check_buf_size = 0x10000;
-	m_in_check_out_buff = new char[m_in_check_buf_size];\
+	m_in_check_out_buff = new char[m_in_check_buf_size];
 	m_in_check_out_buff[0] = 0;
 	if ( !proc->Start() ) {
 		printf("start failed\n");
@@ -238,7 +239,7 @@ void CTranscode::CheckInput()
 	printf("test done\n");
 }
 
-QProcess *CTranscode::Start(CJobControlImp *proc, const QString &dst)
+QProcess *CTranscode::Start(CJobControlImp *proc)
 {
 	proc->AddProcessArg("ffmpeg");
 	proc->AddProcessArg("-i");
@@ -263,15 +264,18 @@ QProcess *CTranscode::Start(CJobControlImp *proc, const QString &dst)
 	proc->AddProcessArg(m_size);
 	// title
 	proc->AddProcessArg("-title");
-	proc->AddProcessArg("PSP/"+m_src);
+	proc->AddProcessArg(m_src);
+	proc->AddProcessArg("-comment");
+	proc->AddProcessArg(m_src);
 
-	QString target_path = GetAppSettings()->TargetDir().filePath(dst);
+	QFileInfo fi(m_src);
+	QString target_path = GetAppSettings()->TargetDir().filePath(fi.baseName() + ".mp4");
 		
 	proc->AddProcessArg(target_path);
     return proc->Start();
 }
 
-QProcess *CTranscode::StartThumbnail(CJobControlImp *proc, const QString &dst)
+QProcess *CTranscode::StartThumbnail(CJobControlImp *proc)
 {
 	proc->AddProcessArg("ffmpeg");
 	proc->AddProcessArg("-i");
@@ -284,6 +288,8 @@ QProcess *CTranscode::StartThumbnail(CJobControlImp *proc, const QString &dst)
 	proc->AddProcessArg("160x90");
 	// title
 	proc->AddProcessArg("-title");
+	proc->AddProcessArg(m_src);
+	proc->AddProcessArg("-comment");
 	proc->AddProcessArg(m_src);
 
 	proc->AddProcessArg("-r");
@@ -299,7 +305,8 @@ QProcess *CTranscode::StartThumbnail(CJobControlImp *proc, const QString &dst)
 	proc->AddProcessArg("-f");
 	proc->AddProcessArg("mjpeg");
 
-	QString target_path = GetAppSettings()->TargetDir().filePath(dst);
+	QFileInfo fi(m_src);
+	QString target_path = GetAppSettings()->TargetDir().filePath(fi.baseName() + ".thm");
 		
 	proc->AddProcessArg(target_path);
     return proc->Start();
@@ -330,10 +337,7 @@ bool CJobQueue::Start()
 	
 	m_total_frames = new_job.TotalFrames();
 	
-	m_curr_file_id = GetAppSettings()->GetNewOutputNameIdx();
-	QString target;
-	target.sprintf("M4V%05d.MP4", m_curr_file_id);
-	m_curr_process = new_job.Start(job_ctrl, target);
+	m_curr_process = new_job.Start(job_ctrl);
 	
 	return true;
 }
@@ -408,13 +412,11 @@ void CJobQueue::UpdateTranscodeProgress(void *ptr, const char *outline)
 void CJobQueue::TranscodeProcessDone()
 {
 	printf("TranscodeProcessDone\n");
-	QString target;
-	target.sprintf("M4V%05d.THM", m_curr_file_id);
 
 	CTranscode &new_job = m_queue.front();
 
 	CJobControlImp *job_ctrl = new CJobControlImp(UpdateThumbnailProgress, this);
-	m_curr_process = new_job.StartThumbnail(job_ctrl, target);
+	m_curr_process = new_job.StartThumbnail(job_ctrl);
 }
 
 void CJobQueue::UpdateThumbnailProgress(void *ptr, const char *outline)
@@ -440,6 +442,7 @@ void CJobQueue::ThumbnailProcessDone()
 	// start next
 	if ( m_is_aborted || !Start() ) {
 		g_main_win->enableStart(true);
+		g_main_win->m_xfer_win->refreshData();
 	}
 }
 
@@ -484,14 +487,21 @@ CAppSettings::~CAppSettings()
 {
 }
 
-int CAppSettings::GetNewOutputNameIdx() const
+int CAppSettings::GetNewOutputNameIdx(const QDir &trg_dir) const
 {
 	for(int i = 1 ; i < 999999; i++) {
 		QString next_name;
 		next_name.sprintf("M4V%05d.MP4", i);
-		if ( !QFile::exists(GetAppSettings()->TargetDir().filePath(next_name)) ) {
+		//QFile f(trg_dir.filePath(next_name));
+		QFileInfo fi(trg_dir.filePath(next_name));
+		printf("DEBUG: testing [%s] - ", (const char *)trg_dir.filePath(next_name));
+		//if ( !QFile::exists(trg_dir.filePath(next_name)) ) {
+		if ( !fi.exists() ) {
+		//if ( !f.open(IO_Raw | IO_ReadOnly) ) {
+			printf("not found, id=%d\n", i);
 			return i;
 		}
+		printf("found\n");
 	}
 	return -1;
 }
@@ -508,28 +518,24 @@ QString CAppSettings::Get_FFMPEG()
 	return ffmpeg;
 }
 
-CPSPMovie::CPSPMovie(int id)
-{
-	m_id = id;
-
-	m_thmb_name.sprintf("M4V%05d.THM", m_id);
-	m_movie_name.sprintf("M4V%05d.MP4", m_id);
-	
-	m_have_thumbnail = QFile::exists(GetAppSettings()->TargetDir().filePath(m_thmb_name));
-	QFile f(GetAppSettings()->TargetDir().filePath(m_movie_name));
-	m_size = f.size();
-}
+//
+// Class representing transcoded file
+//
+int CPSPMovie::s_next_id = 1;
 
 CPSPMovie::CPSPMovie(QFileInfo *info) : m_dir(info->dirPath(TRUE))
 {
 	QRegExp id_exp("M4V(\\d{5})", FALSE);
-	if ( !id_exp.exactMatch(info->baseName()) ) {
-		m_id = -1;
-		return;
+	if ( id_exp.exactMatch(info->baseName()) ) {
+		// this file on PSP
+		m_id = id_exp.cap(1).toInt();
+		m_movie_name = info->baseName().upper() + ".MP4";
+		m_thmb_name = info->baseName().upper() + ".THM";
+	} else {
+		m_id = s_next_id++;
+		m_movie_name = info->baseName() + ".mp4";
+		m_thmb_name = info->baseName() + ".thm";
 	}
-	m_id = id_exp.cap(1).toInt();
-	m_movie_name = info->baseName().upper() + ".MP4";
-	m_thmb_name = info->baseName().upper() + ".THM";
 
 	printf("Test thumbnail at [%s]\n", (const char *)m_dir.filePath(m_thmb_name));
 	
@@ -545,7 +551,7 @@ bool CPSPMovie::DoCopy(QWidget *parent, const QString &source, const QString &ta
 	printf("Copying [%s] -> [%s]\n", (const char *)source, (const char *)target);
 	QFile src(source);
 	QFile dst(target);
-	if ( !src.open(IO_Raw | IO_ReadOnly ) ) {
+	if ( !src.open(IO_Raw | IO_ReadOnly) ) {
 		return false;
 	}
 	if ( !dst.open(IO_Raw | IO_WriteOnly | IO_Truncate) ) {
@@ -583,16 +589,27 @@ bool CPSPMovie::DoCopy(QWidget *parent, const QString &source, const QString &ta
 	return true;
 }
 
-bool CPSPMovie::TransferTo(QWidget *parent, const QString &target_dir)
+bool CPSPMovie::TransferTo(QWidget *parent, const QString &target_dir, int trg_idx)
 {
 	QDir trgdir(target_dir);
+
+	QString trg_movie, trg_thmb;
+	if ( trg_idx == -1 ) {
+		trg_movie.sprintf("From_PSP_%05d.MP4", s_next_id);
+		trg_thmb.sprintf("From_PSP_%05d.THM", trg_idx);
+		s_next_id++;
+	} else {
+		trg_movie.sprintf("M4V%05d.MP4", trg_idx);
+		trg_thmb.sprintf("M4V%05d.THM", trg_idx);
+	}
+	
 	// movie going first
 	if ( !DoCopy(parent, m_dir.filePath(m_movie_name),
-			trgdir.filePath(m_movie_name)) ) {
+			trgdir.filePath(trg_movie)) ) {
 		return false;
 	}
 	if ( m_have_thumbnail && !DoCopy(parent, m_dir.filePath(m_thmb_name),
-			trgdir.filePath(m_thmb_name)) ) {
+			trgdir.filePath(trg_thmb)) ) {
 		return false;
 	}
 
@@ -615,7 +632,7 @@ CPSPMovieLocalList::CPSPMovieLocalList(const QString &dir_path) : m_source_dir(d
 	printf("Loading list from [%s]\n", (const char *)dir_path);
 
 	// on vfat it's shown in lower case !
-	m_source_dir.setNameFilter("M4V*.MP4 m4v*.mp4");
+	m_source_dir.setNameFilter("*.MP4;*.mp4");
 	const QFileInfoList *files = m_source_dir.entryInfoList(QDir::Files | QDir::NoSymLinks | QDir::Readable);
 	if ( files ) {
 		QFileInfoListIterator it(*files);
@@ -632,7 +649,7 @@ bool CPSPMovieLocalList::Transfer(QWidget *parent, int id, const QString &dest)
 {
 	Q_ASSERT ( m_movie_set.count(id) );
 	CPSPMovie &m = m_movie_set[id];
-	return m.TransferTo(parent, dest);
+	return m.TransferTo(parent, dest, -1);
 }
 
 bool CPSPMovieLocalList::TransferPSP(QWidget *parent, int id, const QString &base)
@@ -647,6 +664,10 @@ bool CPSPMovieLocalList::TransferPSP(QWidget *parent, int id, const QString &bas
 		return false;
 	}
 	QDir trg_dir(mp_root.filePath("100MNV01"));
+
+	// get free index before moving directory
+	int free_idx = GetAppSettings()->GetNewOutputNameIdx(trg_dir.path());
+
 	QDir trg_dir_backup(mp_root.filePath("100MNV01_BACK"));
 	if ( trg_dir.exists() ) {
 	  printf("DEBUG: rename [%s] -> [%s]\n", (const char *)trg_dir.path(),
@@ -659,7 +680,7 @@ bool CPSPMovieLocalList::TransferPSP(QWidget *parent, int id, const QString &bas
 		return false;
 	}
 	printf("DEBUG: transferring [%s] -> [%s]\n", (const char *)m.Name(), (const char *)trg_dir.path());
-	if ( !m.TransferTo(parent, trg_dir.path()) ) {
+	if ( !m.TransferTo(parent, trg_dir.path(), free_idx) ) {
 	  printf("DEBUG: transfer failed\n");
 		return false;
 	}
