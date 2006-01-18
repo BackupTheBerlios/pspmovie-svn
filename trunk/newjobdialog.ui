@@ -124,7 +124,7 @@
             </font>
         </property>
         <property name="text">
-            <string>/home/leo/workspace/pspmovie/test.avi</string>
+            <string></string>
         </property>
     </widget>
     <widget class="QPushButton">
