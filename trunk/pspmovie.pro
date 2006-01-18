@@ -3,13 +3,13 @@ LANGUAGE	= C++
 
 CONFIG	+= qt debug
 
-unix:LIBS	+= -lhal -lhal-storage
+unix:LIBS	+= -lhal -lhal-storage -lavformat -lavcodec
 
 unix:INCLUDEPATH	+= /usr/include/hal /usr/include/dbus-1.0/ /usr/lib/dbus-1.0/include/
 
-HEADERS	+= pspmovie.h
+HEADERS	+= pspmovie.h avutils.h
 
-SOURCES	+= pspmovie.cpp
+SOURCES	+= pspmovie.cpp avutils.cpp
 
 FORMS	= mainwin.ui \
 	newjobdialog.ui \
