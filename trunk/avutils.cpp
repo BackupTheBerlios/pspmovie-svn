@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "avutils.h"
 
 void AV_Init()
 {
@@ -37,7 +38,10 @@ CAVInfo::CAVInfo(const char *filename)
 		printf("av_find_stream_info - error\n");
 		return;
 	}
+
+#ifdef AVLIB_TEST
 	dump_format(fctx, 0, filename, false);
+#endif
 
 	if ( strlen(fctx->title) ) {
 		strncpy(m_title, fctx->title, sizeof(m_title)-1);

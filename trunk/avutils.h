@@ -26,4 +26,9 @@ class CAVInfo {
 		const char *Title() { return &m_title[0]; }
 };
 
+void AV_Init();
+
+bool CanDoPSP();
+
+
 #endif /*AVUTILS_H_*/

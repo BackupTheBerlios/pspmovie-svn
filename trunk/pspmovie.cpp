@@ -8,6 +8,7 @@
 #include <unistd.h>
 
 #include "pspmovie.h"
+#include "avutils.h"
 
 #include "mainwin.h"
 #include "xferwin.h"
@@ -148,95 +149,25 @@ CTranscode::CTranscode(QString &src, QString &size,
 	
 	s_bitrate.replace("kpbs", "", false);
 	v_bitrate.replace("kpbs", "", false);
-	CheckInput();
-}
-
-void CTranscode::ParseCheckInputTest()
-{
-	char *s = m_in_check_out_buff;
-	printf("InParse = [%s]\n", s);
-	//if ( s && !strncmp(s, "Input #0", strlen("Input #0")) ) {
-	if ( s && strstr(s, "Input #0") ) {
-		m_duration = -1;
-		char *p = strstr(s, "Stream #0");
-		if ( !p ) {
-			// no stream ?
-			return ;
-		} else {
-			p = strstr(p, "Video:");
-			if ( !p ) {
-				// aparantly no video ?
-				return;
-			}
-			p += strlen("Video:");
-		}
-		QStringList tok = QStringList::split(",", p);
-		//printf("size=[%s] fps=[%s]\n", (const char *)tok[2], (const char *)tok[3]);
-		// parse size and fps
-		const char *cp = tok[2];
-		while( isspace(*cp) ) cp++;
-		if ( sscanf(cp, "%dx%d", &m_width, &m_height) != 2 ) {
-			return;
-		}
-		cp = tok[3];
-		while( isspace(*cp) ) cp++;
-		if ( sscanf(cp, "%f", &m_fps) != 1 ) {
-			return;
-		}
-		// size and fps looks ok by now
-		p = strstr(s, "Duration:");
-		if ( !p ) {
-			return;
-		}
-		p += strlen("Duration:");
-		while( isspace(*p) ) p++;
-		int h, m, s, ms;
-		if ( sscanf(p, "%d:%d:%d.%d", &h, &m, &s, &ms) != 4 ) {
-			return;
-		}
+	//CheckInput();
+	m_in_info = new CAVInfo(m_src);
+	if ( IsOK() ) {
+		int s = m_in_info->Sec() % 60, ms = m_in_info->Usec() / 1000;
+		int h = m_in_info->Sec() / 3600;
+		int m = (m_in_info->Sec() - h*3600) / 60;
 		m_str_duration = QString( "%1:%2:%3.%4" )
                         .arg( h ) .arg( m ) .arg( s ) .arg( ms );
-		//printf("all ok\n");
-		m_duration = ms + 1000*(s + 60*(m + 60*h));
 	}
 }
 
-void CTranscode::CheckInputCallback(void *ptr, const char *s)
+bool CTranscode::IsOK()
 {
-	CTranscode *This = (CTranscode *)ptr;
-	printf("InCheck = [%s]\n", s);
-	if ( s ) {
-		strcat(This->m_in_check_out_buff, s);
-	} else {
-		This->m_duration = -1;
-	}
+	return m_in_info && m_in_info->HaveVStream() && m_in_info->CodecOk();
 }
 
-void CTranscode::CheckInput()
+int CTranscode::TotalFrames()
 {
-
-	CJobControlImp *proc = new CJobControlImp(CheckInputCallback, this);
-
-	proc->AddProcessArg("ffmpeg");
-	proc->AddProcessArg("-i");
-	proc->AddProcessArg(m_src);
-	
-	m_duration = 0;
-	
-	m_in_check_buf_size = 0x10000;
-	m_in_check_out_buff = new char[m_in_check_buf_size];
-	m_in_check_out_buff[0] = 0;
-	if ( !proc->Start() ) {
-		printf("start failed\n");
-	}
-	
-	while ( !m_duration ) {
-		qApp->processEvents();
-	}
-	ParseCheckInputTest();
-	delete [] m_in_check_out_buff;
-	
-	printf("test done\n");
+	return m_in_info ?  m_in_info->FrameCount() : 0;
 }
 
 QProcess *CTranscode::Start(CJobControlImp *proc)
@@ -393,7 +324,7 @@ void CJobQueue::ParseFfmpegOutputLine(const char *line)
 		//printf("frame = %d progress = %d\n", frame, progress);
 		g_main_win->updateProgress(progress, frame);
 	} else {
-		if ( strstr(line, "Press [q] to stop encoding") ) {
+		if ( strstr(line, "frame=") ) {
 			m_in_progress_out = true;
 		}
 	}
@@ -723,7 +654,10 @@ int main( int argc, char **argv )
 	QApplication app(argc, argv);
 	MainWin mainwin;
 	g_main_win = &mainwin;
-	
+
+	AV_Init();
+	CanDoPSP();
+		
 	app.setMainWidget(&mainwin);
 	mainwin.show();
 	

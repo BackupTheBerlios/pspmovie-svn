@@ -8,6 +8,9 @@
 QString CastToXBytes(unsigned long size);
 
 class CJobControlImp;
+
+class CAVInfo;
+
 class CTranscode {
 		// user choices from gui
 		QString m_src;
@@ -19,19 +22,15 @@ class CTranscode {
 		QString m_s_bitrate, m_v_bitrate;
 		
 		// input stream params
+		CAVInfo *m_in_info;
+		/*
 		int m_width, m_height;
 		// duration is in msec. frame count is 
 		// estimation from "duration x fps" rounded up
 		int m_duration, m_frame_count;
-		QString m_str_duration;
 		float m_fps;
-		
-		static void CheckInputCallback(void *, const char *);
-		void ParseCheckInputTest();
-		
-		char *m_in_check_out_buff;
-		int m_in_check_buf_size;
-		void CheckInput();
+		*/
+		QString m_str_duration;
 		
 		// for lookup in job queue
 		int m_id;
@@ -41,11 +40,9 @@ class CTranscode {
 		CTranscode(QString &src, QString &size,
 			QString &s_bitrate, QString &v_bitrate, bool fix_aspect);
 		
-		bool IsOK() { return m_duration != -1; }
+		bool IsOK();
 
-		int Duration() { return m_duration; }
-		
-		int TotalFrames() { return (int)((m_duration * m_fps) / 1000.0); }
+		int TotalFrames();
 		
 		QProcess *Start(CJobControlImp *ctrl);
 		QProcess *StartThumbnail(CJobControlImp *ctrl);
