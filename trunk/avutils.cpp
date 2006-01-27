@@ -1,6 +1,9 @@
 #include <ffmpeg/avformat.h>
 #include <ffmpeg/avcodec.h>
 
+#include <mp4ff.h>
+#include <mp4.h>
+
 #include <stdio.h>
 #include <string.h>
 
@@ -27,7 +30,11 @@ CAVInfo::CAVInfo(const char *filename)
 {
 	m_have_vstream = false;
 	m_codec_ok = false;
-	
+
+	if ( !filename ) {
+		return;
+	}
+			
 	AVFormatContext *fctx;
 	
 	if ( av_open_input_file(&fctx, filename, 0, 0, 0) != 0 ) {
@@ -41,10 +48,11 @@ CAVInfo::CAVInfo(const char *filename)
 
 #ifdef AVLIB_TEST
 	dump_format(fctx, 0, filename, false);
+	printf("Title [%s] comment [%s]\n", fctx->title, fctx->comment);
 #endif
 
-	if ( strlen(fctx->title) ) {
-		strncpy(m_title, fctx->title, sizeof(m_title)-1);
+	if ( strlen(fctx->comment) ) {
+		strncpy(m_title, fctx->comment, sizeof(m_title)-1);
 		m_title[sizeof(m_title)-1] = 0;
 	} else {
 		m_title[0] = 0;
@@ -85,14 +93,87 @@ CAVInfo::CAVInfo(const char *filename)
 }
 
 #ifdef AVLIB_TEST
-int main()
+uint32_t my_mp4ff_read(void *user_data, void *buffer, uint32_t length)
+{
+	FILE *f = (FILE *)user_data;
+	size_t count = fread(buffer, length, 1, f);
+	return count;
+}
+
+uint32_t my_mp4ff_seek(void *user_data, uint64_t position)
+{
+	FILE *f = (FILE *)user_data;
+	return fseek(f, position, SEEK_SET);
+}
+
+void mp4fftest(const char *file)
+{
+	printf("mp4fftest for [%s]\n", file);
+
+	mp4ff_callback_t cb;
+	cb.read = my_mp4ff_read;
+	cb.seek = my_mp4ff_seek;
+	cb.write = 0;
+	cb.truncate = 0;
+	
+	FILE *f = fopen(file, "r");
+	if (!f) {
+		printf("fopen failed\n");
+		return;
+	}
+	cb.user_data = f;
+	
+	mp4ff_t *mp4 = mp4ff_open_read(&cb);
+	
+	for(int i = 0; i < mp4ff_meta_get_num_items(mp4); i++) {
+		char *item, *value;
+		mp4ff_meta_get_by_index(mp4, i, &item, &value);
+		printf("META: [%s] => [%s]\n", item, value);
+	}
+	printf("mp4fftest done\n");
+}
+
+void mp4test(const char *file)
+{
+	printf("mp4test for [%s]\n", file);
+	char *info = MP4FileInfo(file, 0);
+	printf("Info = [%s]\n", info);
+	MP4FileHandle mp4File = MP4Modify(file, MP4_DETAILS_ERROR);
+	if ( !mp4File ) {
+		printf("MP4Read failed\n");
+		return;
+	}
+	int i = 0;
+	const char *name;
+	uint32_t vsize;
+	uint8_t *value;
+	while ( MP4GetMetadataByIndex(mp4File, i, &name, &value, &vsize) ) {
+		printf("META: [%s] => [%s]\n", name, value);
+		i++;
+	}
+	char *metaname;
+	if ( MP4GetMetadataName(mp4File, &metaname) ) {
+		printf("META NAME:\n");
+	}
+	MP4Dump(mp4File, stdout, 0);
+	
+	printf("mp4test done\n");
+}
+
+int main(int argc, char *argv[])
 {
 	AV_Init();
 	
 	printf("can do PSP - [%s]\n", CanDoPSP() ? "yes" : "no");
 	
-	CAVInfo i("test.avi");
-	printf("Info: %d.%d sec %d frames %f fps\n", i.Sec(), i.Usec(), i.FrameCount(), i.Fps());
+	const char *file = argc > 1 ? argv[1] : "test.avi";
+	
+	//mp4fftest(file);
+	mp4test(file);
+	
+	//CAVInfo i(file);
+	//printf("Info: title %s\n", i.Title());
+	//printf("Info: %d.%d sec %d frames %f fps\n", i.Sec(), i.Usec(), i.FrameCount(), i.Fps());
 	
 	return 0;
 }

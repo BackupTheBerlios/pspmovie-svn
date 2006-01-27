@@ -25,7 +25,7 @@ class CXferListItem : public QListViewItem {
     int m_id;
 public:
     CXferListItem(QListView *parent, int id, const QString &name, const QString &size) :
-	    QListViewItem(parent, name, size)
+	    QListViewItem(parent, "", name, size)
     {
 	m_id = id;
     }
@@ -70,7 +70,11 @@ CPSPMovieLocalList * XferWin::refreshList( const QString &dir, QListView *listvi
     listview->clear();
     for(CPSPMovieLocalList::CPSPMovieListIt i = file_list->Begin(); i != file_list->End(); i++) {
 	CPSPMovie &m = i->second;
-	new CXferListItem(listview, m.Id(), m.Name(), m.Size());
+	CXferListItem *it = new CXferListItem(listview, m.Id(), m.Name(), m.Size());
+	if ( !m.Icon().isNull() ) {
+	    QPixmap pm(m.Icon());
+	    it->setPixmap(0, pm);
+	}
     }
     return file_list;
 }
@@ -117,7 +121,7 @@ void XferWin::toDesktop_clicked()
     QListViewItemIterator it(listView_PSP, QListViewItemIterator::Selected );
     while ( it.current() ) {
 	CXferListItem *item = (CXferListItem *)it.current();
-	if ( !m_local_list->Transfer(this, item->Id(), GetAppSettings()->TargetDir().path()) ) {
+	if ( !m_psp_list->Transfer(this, item->Id(), GetAppSettings()->TargetDir().path()) ) {
 	    break;
 	}
 	++it;

@@ -9,7 +9,7 @@ QString CastToXBytes(unsigned long size);
 
 class CJobControlImp;
 
-class CAVInfo;
+#include "avutils.h"
 
 class CTranscode {
 		// user choices from gui
@@ -22,7 +22,7 @@ class CTranscode {
 		QString m_s_bitrate, m_v_bitrate;
 		
 		// input stream params
-		CAVInfo *m_in_info;
+		CAVInfo m_in_info;
 		/*
 		int m_width, m_height;
 		// duration is in msec. frame count is 
@@ -106,6 +106,8 @@ class CPSPMovie {
 		QDir m_dir;
 		QString m_str_size;
 		bool DoCopy(QWidget *parent, const QString &source, const QString &target);
+
+		QImage m_icon;
 	public:
 		CPSPMovie(QFileInfo *info);
 		
@@ -118,6 +120,8 @@ class CPSPMovie {
 		const QString &Size() { return m_str_size; };
 		
 		int Id() { return m_id; }
+		
+		QImage &Icon() { return m_icon; }
 };
 
 class CPSPMovieLocalList {

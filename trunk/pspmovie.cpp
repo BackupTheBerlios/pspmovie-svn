@@ -3,12 +3,12 @@
 #include <qregexp.h>
 #include <qprogressdialog.h>
 #include <qtimer.h>
+#include <qimage.h>
 
 #include <math.h>
 #include <unistd.h>
 
 #include "pspmovie.h"
-#include "avutils.h"
 
 #include "mainwin.h"
 #include "xferwin.h"
@@ -116,7 +116,7 @@ void CJobControlImp::ProcessDone()
 int CTranscode::m_curr_id = 1001;
 
 CTranscode::CTranscode(QString &src, QString &size,
-			QString &s_bitrate, QString &v_bitrate, bool fix_aspect)
+			QString &s_bitrate, QString &v_bitrate, bool fix_aspect) : m_in_info(src)
 {
 	m_src = src;
 	m_size = size;
@@ -150,11 +150,10 @@ CTranscode::CTranscode(QString &src, QString &size,
 	s_bitrate.replace("kpbs", "", false);
 	v_bitrate.replace("kpbs", "", false);
 	//CheckInput();
-	m_in_info = new CAVInfo(m_src);
 	if ( IsOK() ) {
-		int s = m_in_info->Sec() % 60, ms = m_in_info->Usec() / 1000;
-		int h = m_in_info->Sec() / 3600;
-		int m = (m_in_info->Sec() - h*3600) / 60;
+		int s = m_in_info.Sec() % 60, ms = m_in_info.Usec() / 1000;
+		int h = m_in_info.Sec() / 3600;
+		int m = (m_in_info.Sec() - h*3600) / 60;
 		m_str_duration = QString( "%1:%2:%3.%4" )
                         .arg( h ) .arg( m ) .arg( s ) .arg( ms );
 	}
@@ -162,12 +161,12 @@ CTranscode::CTranscode(QString &src, QString &size,
 
 bool CTranscode::IsOK()
 {
-	return m_in_info && m_in_info->HaveVStream() && m_in_info->CodecOk();
+	return m_in_info.HaveVStream() && m_in_info.CodecOk();
 }
 
 int CTranscode::TotalFrames()
 {
-	return m_in_info ?  m_in_info->FrameCount() : 0;
+	return m_in_info.FrameCount();
 }
 
 QProcess *CTranscode::Start(CJobControlImp *proc)
@@ -472,9 +471,13 @@ CPSPMovie::CPSPMovie(QFileInfo *info) : m_dir(info->dirPath(TRUE))
 	
 	m_have_thumbnail = QFile::exists(m_dir.filePath(m_thmb_name));
 	m_size = info->size();
-	printf("File [%s] with thumbnail [%s]\n", (const char *)m_movie_name,
+	printf("File [%d] [%s] with thumbnail [%s]\n", m_id, (const char *)m_movie_name,
 	       m_have_thumbnail ? "yes" : "no");
 	m_str_size = CastToXBytes(m_size);
+	
+	if ( m_have_thumbnail ) {
+		m_icon = QImage(m_dir.filePath(m_thmb_name)).smoothScale(2*32, 2*24);
+	}
 }
 
 bool CPSPMovie::DoCopy(QWidget *parent, const QString &source, const QString &target)
@@ -526,9 +529,17 @@ bool CPSPMovie::TransferTo(QWidget *parent, const QString &target_dir, int trg_i
 
 	QString trg_movie, trg_thmb;
 	if ( trg_idx == -1 ) {
-		trg_movie.sprintf("From_PSP_%05d.MP4", s_next_id);
-		trg_thmb.sprintf("From_PSP_%05d.THM", trg_idx);
-		s_next_id++;
+		// try to extract title
+		CAVInfo in_info(m_dir.filePath(m_movie_name));
+		QString src_title(in_info.Title());
+		if ( src_title.length() > 3 ) {
+			trg_movie = src_title + ".mp4";
+			trg_thmb = src_title + ".thm";
+		} else {
+			trg_movie.sprintf("from_PSP_%05d.mp4", s_next_id);
+			trg_thmb.sprintf("from_PSP_%05d.thm", trg_idx);
+		}
+		trg_idx = s_next_id++;
 	} else {
 		trg_movie.sprintf("M4V%05d.MP4", trg_idx);
 		trg_thmb.sprintf("M4V%05d.THM", trg_idx);
@@ -579,6 +590,7 @@ CPSPMovieLocalList::CPSPMovieLocalList(const QString &dir_path) : m_source_dir(d
 bool CPSPMovieLocalList::Transfer(QWidget *parent, int id, const QString &dest)
 {
 	Q_ASSERT ( m_movie_set.count(id) );
+	printf("DEBUG: will copy file %d\n", id);
 	CPSPMovie &m = m_movie_set[id];
 	return m.TransferTo(parent, dest, -1);
 }
@@ -626,7 +638,10 @@ bool CPSPMovieLocalList::TransferPSP(QWidget *parent, int id, const QString &bas
 				QString backup_dst(trg_dir.filePath(fi->fileName().upper()));
 				//trg_dir.rename(fi->filePath(), trg_dir.filePath(fi->fileName()));
 				printf("DEBUG: moving [%s] -> [%s]\n", (const char *)backup_src, (const char *)backup_dst);
-				trg_dir.rename(backup_src, backup_dst);
+				if ( !trg_dir.rename(backup_src, backup_dst) ) {
+					printf("OOps - rename failed\n");
+				}
+				sync();
 				++it;
 			}
 		}
@@ -634,6 +649,7 @@ bool CPSPMovieLocalList::TransferPSP(QWidget *parent, int id, const QString &bas
 		if  ( !trg_dir_backup.rmdir(trg_dir_backup.path()) ) {
 			printf("remove failed\n");
 		}
+		sync();
 	}
 	return true;
 }

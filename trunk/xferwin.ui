@@ -58,6 +58,17 @@
                         <widget class="QListView">
                             <column>
                                 <property name="text">
+                                    <string>Icon</string>
+                                </property>
+                                <property name="clickable">
+                                    <bool>true</bool>
+                                </property>
+                                <property name="resizable">
+                                    <bool>true</bool>
+                                </property>
+                            </column>
+                            <column>
+                                <property name="text">
                                     <string>Name</string>
                                 </property>
                                 <property name="clickable">
@@ -139,6 +150,17 @@
                             <cstring>unnamed</cstring>
                         </property>
                         <widget class="QListView" row="0" column="0" rowspan="1" colspan="3">
+                            <column>
+                                <property name="text">
+                                    <string>Icon</string>
+                                </property>
+                                <property name="clickable">
+                                    <bool>true</bool>
+                                </property>
+                                <property name="resizable">
+                                    <bool>true</bool>
+                                </property>
+                            </column>
                             <column>
                                 <property name="text">
                                     <string>Name</string>

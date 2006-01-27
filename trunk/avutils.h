@@ -13,6 +13,7 @@ class CAVInfo {
 		char m_title[512];
 	public:
 		CAVInfo(const char *file);
+		CAVInfo() { /* for stl */ }
 		
 		bool HaveVStream() { return m_have_vstream; }
 		bool CodecOk() { return m_codec_ok; }
