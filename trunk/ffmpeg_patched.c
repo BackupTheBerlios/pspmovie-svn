@@ -4068,32 +4068,37 @@ void parse_arg_file(const char *filename)
     opt_output_file(filename);
 }
 
+void ffmpeg_init()
+{
+    av_register_all();
+
+    avctx_opts= avcodec_alloc_context();
+}
+
+void ffmpeg_deinit()
+{
+    av_free_static();
+}
+
 int ffmpeg_main(int argc, char **argv, int(*cb)(void *, int), void *ptr)
 {
     int i;
     int64_t ti;
 
-    av_register_all();
-
-    avctx_opts= avcodec_alloc_context();
-
-    if (argc <= 1) {
-        printf("help removed\n");
-        return 0;
-    }
-
+	received_sigterm = 0;
+	nb_input_files = nb_output_files = nb_stream_maps = nb_meta_data_maps = 0;
+	file_oformat = file_iformat = 0;
+	audio_disable = video_disable = 0;
+	recording_time = 0;
+	start_time = 0;
+	
     /* parse options */
     parse_options(argc, argv, options);
 
     /* file converter / grab */
-    if (nb_output_files <= 0) {
+    if ( (nb_output_files != 1) || (nb_input_files != 1)) {
         fprintf(stderr, "Must supply at least one output file\n");
-        exit(1);
-    }
-
-    if (nb_input_files == 0) {
-        input_sync = 1;
-        prepare_grab();
+        return 0;
     }
 
 	cpp_passed_ptr = ptr;
@@ -4103,9 +4108,6 @@ int ffmpeg_main(int argc, char **argv, int(*cb)(void *, int), void *ptr)
     av_encode(output_files, nb_output_files, input_files, nb_input_files,
               stream_maps, nb_stream_maps);
     ti = getutime() - ti;
-    if (do_benchmark) {
-        printf("bench: utime=%0.3fs\n", ti / 1000000.0);
-    }
 
     /* close files */
     for(i=0;i<nb_output_files;i++) {
@@ -4120,8 +4122,6 @@ int ffmpeg_main(int argc, char **argv, int(*cb)(void *, int), void *ptr)
     }
     for(i=0;i<nb_input_files;i++)
         av_close_input_file(input_files[i]);
-
-    av_free_static();
 
     if(intra_matrix)
         av_free(intra_matrix);
