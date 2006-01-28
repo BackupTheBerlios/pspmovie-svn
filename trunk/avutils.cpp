@@ -211,17 +211,19 @@ bool CFFmpeg_Glue::RunTranscode(
 	int i = 0;
 	// "must" set
 	ffmpeg_opts[i++] = "ffmpeg"; ffmpeg_opts[i++] = "-y";
-	ffmpeg_opts[i++] = "-f"; ffmpeg_opts[i++] = "psp";
-	ffmpeg_opts[i++] = "-r"; ffmpeg_opts[i++] = "29.970030";
-	ffmpeg_opts[i++] = "-ar"; ffmpeg_opts[i++] = "24000";
-
-	ffmpeg_opts[i++] = "-s"; ffmpeg_opts[i++] = "320x240";
-
-	// current call params
 	ffmpeg_opts[i++] = "-i"; ffmpeg_opts[i++] = infile;
 	ffmpeg_opts[i++] = "-b"; ffmpeg_opts[i++] = vbitrate;
 	ffmpeg_opts[i++] = "-ab"; ffmpeg_opts[i++] = abitrate;
 	ffmpeg_opts[i++] = "-title"; ffmpeg_opts[i++] = title;
+	ffmpeg_opts[i++] = "-s"; ffmpeg_opts[i++] = "320x240";
+
+	ffmpeg_opts[i++] = "-f"; ffmpeg_opts[i++] = "psp";
+	ffmpeg_opts[i++] = "-r"; ffmpeg_opts[i++] = "29.970030";
+	ffmpeg_opts[i++] = "-ar"; ffmpeg_opts[i++] = "24000";
+	ffmpeg_opts[i++] = "-ac"; ffmpeg_opts[i++] = "2";
+
+
+	// current call params
 	
 	ffmpeg_opts[i++] = outfile;
 	
