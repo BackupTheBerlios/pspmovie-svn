@@ -149,7 +149,7 @@ CTranscode::CTranscode(QString &src, QString &size,
 	
 	s_bitrate.replace("kpbs", "", false);
 	v_bitrate.replace("kpbs", "", false);
-	//CheckInput();
+
 	if ( IsOK() ) {
 		int s = m_in_info.Sec() % 60, ms = m_in_info.Usec() / 1000;
 		int h = m_in_info.Sec() / 3600;
@@ -205,14 +205,14 @@ bool CJobQueue::Start()
 
 	m_is_aborted = false;
 
-	CTranscode &new_job = m_queue.front();
-
-	m_total_frames = new_job.TotalFrames();
-
-	g_main_win->enableStart(false);
-
 	do {
-		new_job.RunTranscode(m_ffmpeg, UpdateTranscodeProgress2, this);
+		// update gui controls
+		g_main_win->enableStart(false);
+
+		CTranscode &new_job = m_queue.front();
+		m_total_frames = new_job.TotalFrames();
+
+		new_job.RunTranscode(m_ffmpeg, UpdateTranscodeProgress, this);
 		new_job.RunThumbnail(m_ffmpeg);
 	
 		// current job done: remove from gui

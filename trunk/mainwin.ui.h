@@ -26,7 +26,6 @@ public:
 	    QListViewItem(parent, data.ShortName(), data.StrDuration(), data.Target())
     {
 	QPixmap pxm("images.jpeg");
-	//pxm.scale(30,30);
 	setPixmap(0, pxm);
 	m_id = data.Id();
     }
@@ -62,8 +61,13 @@ void MainWin::enableStart( bool enable )
     if ( enable ) {
 	lineEdit_CurrFile->setText("");
 	lCDNumber_TotalFrames->display(0);
+	lCDNumber_Frame->display(0);
 	progressBar_Encode->setProgress(0);
-     }
+    } else {
+	CTranscode *job = g_job_queue.NextJob();
+	lineEdit_CurrFile->setText(job->ShortName());
+	lCDNumber_TotalFrames->display(job->TotalFrames());
+    }
 }
 
 
@@ -94,10 +98,6 @@ void MainWin::startQueue()
 	    return;
 	}
     }
-    // update gui before item polled out of queue
-    CTranscode *job = g_job_queue.NextJob();
-    lineEdit_CurrFile->setText(job->ShortName());
-    lCDNumber_TotalFrames->display(job->TotalFrames());
     
     g_job_queue.Start();
     
@@ -137,9 +137,6 @@ void MainWin::deleteQueue()
 
 void MainWin::startXfer()
 {
-//    if ( !m_xfer_win ) {
-//	m_xfer_win = new XferWin(this);
-//    }
     m_xfer_win->show();
     m_xfer_win->refreshData();
 }
