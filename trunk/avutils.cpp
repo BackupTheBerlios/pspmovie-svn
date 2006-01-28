@@ -1,13 +1,12 @@
 #include <ffmpeg/avformat.h>
 #include <ffmpeg/avcodec.h>
 
-#include <mp4ff.h>
-#include <mp4.h>
-
 #include <stdio.h>
 #include <string.h>
 
 #include "avutils.h"
+
+#include "ffmpeg_glue.h"
 
 void AV_Init()
 {
@@ -178,3 +177,81 @@ int main(int argc, char *argv[])
 	return 0;
 }
 #endif
+
+CFFmpeg_Glue::CFFmpeg_Glue()
+{
+	ffmpeg_init();
+}
+
+CFFmpeg_Glue::~CFFmpeg_Glue()
+{
+	ffmpeg_deinit();
+}
+
+bool CFFmpeg_Glue::IsValidVersion()
+{
+	if ( !avcodec_find_encoder(CODEC_ID_AAC) || !avcodec_find_encoder(CODEC_ID_MPEG4)) {
+		return false;
+	}
+	AVOutputFormat *fmt = guess_format("psp", 0, 0);
+	if ( !fmt || strcmp(fmt->name, "psp") ) {
+		return false;
+	}
+	return true;
+}
+
+bool CFFmpeg_Glue::RunTranscode(
+			const char *infile, const char *outfile,
+			const char *abitrate, const char *vbitrate,
+			const char *title,
+			int (*callback)(void *, int frame), void *uptr)
+{
+	const char *ffmpeg_opts[256];
+	
+	int i = 0;
+	// "must" set
+	ffmpeg_opts[i++] = "ffmpeg"; ffmpeg_opts[i++] = "-y";
+	ffmpeg_opts[i++] = "-f"; ffmpeg_opts[i++] = "psp";
+	ffmpeg_opts[i++] = "-r"; ffmpeg_opts[i++] = "29.970030";
+	ffmpeg_opts[i++] = "-ar"; ffmpeg_opts[i++] = "24000";
+
+	ffmpeg_opts[i++] = "-s"; ffmpeg_opts[i++] = "320x240";
+
+	// current call params
+	ffmpeg_opts[i++] = "-i"; ffmpeg_opts[i++] = infile;
+	ffmpeg_opts[i++] = "-b"; ffmpeg_opts[i++] = vbitrate;
+	ffmpeg_opts[i++] = "-ab"; ffmpeg_opts[i++] = abitrate;
+	ffmpeg_opts[i++] = "-title"; ffmpeg_opts[i++] = title;
+	
+	ffmpeg_opts[i++] = outfile;
+	
+	ffmpeg_opts[i++] = 0;
+	
+	ffmpeg_main(i-1, (char **)ffmpeg_opts, callback, uptr);
+	
+	return true;
+}
+
+bool CFFmpeg_Glue::RunThumbnail(const char *infile, const char *outfile, const char *offset)
+{
+	const char *ffmpeg_opts[256];
+	
+	int i = 0;
+	// "must" set
+	ffmpeg_opts[i++] = "ffmpeg"; ffmpeg_opts[i++] = "-y";
+	ffmpeg_opts[i++] = "-i"; ffmpeg_opts[i++] = infile;
+	ffmpeg_opts[i++] = "-s"; ffmpeg_opts[i++] = "160x90";
+	ffmpeg_opts[i++] = "-r"; ffmpeg_opts[i++] = "1";
+	ffmpeg_opts[i++] = "-t"; ffmpeg_opts[i++] = "1";
+	ffmpeg_opts[i++] = "-ss"; ffmpeg_opts[i++] = offset;
+	ffmpeg_opts[i++] = "-an";
+	ffmpeg_opts[i++] = "-f"; ffmpeg_opts[i++] = "mjpeg";
+
+	ffmpeg_opts[i++] = outfile;
+	
+	ffmpeg_opts[i++] = 0;
+	
+	ffmpeg_main(i-1, (char **)ffmpeg_opts, 0, 0);
+
+	return true;
+}

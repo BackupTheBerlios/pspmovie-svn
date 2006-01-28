@@ -169,78 +169,22 @@ int CTranscode::TotalFrames()
 	return m_in_info.FrameCount();
 }
 
-QProcess *CTranscode::Start(CJobControlImp *proc)
+void CTranscode::RunTranscode(CFFmpeg_Glue &ffmpeg, int (cb)(void *, int), void *ptr)
 {
-	proc->AddProcessArg("ffmpeg");
-	proc->AddProcessArg("-i");
-	proc->AddProcessArg(m_src);
-    
-    // mandatory arguments
-	proc->AddProcessArg("-y");
-	proc->AddProcessArg("-f");
-	proc->AddProcessArg("psp");
-	proc->AddProcessArg("-r");
-	proc->AddProcessArg("29.970030");
-//	proc->AddProcessArg("29.97");
-	proc->AddProcessArg("-ar");
-	proc->AddProcessArg("24000");
-	// rates:
-	proc->AddProcessArg("-b");
-	proc->AddProcessArg(m_v_bitrate);
-	proc->AddProcessArg("-ab");
-	proc->AddProcessArg(m_s_bitrate);
-	// size
-	proc->AddProcessArg("-s");
-	proc->AddProcessArg(m_size);
-	// title
-	proc->AddProcessArg("-title");
-	proc->AddProcessArg(m_src);
-	proc->AddProcessArg("-comment");
-	proc->AddProcessArg(m_src);
-
 	QFileInfo fi(m_src);
 	QString target_path = GetAppSettings()->TargetDir().filePath(fi.baseName() + ".mp4");
-		
-	proc->AddProcessArg(target_path);
-    return proc->Start();
+	ffmpeg.RunTranscode(m_src, target_path, m_s_bitrate, m_v_bitrate, m_src, cb, ptr);
+	printf("done !\n");
 }
 
-QProcess *CTranscode::StartThumbnail(CJobControlImp *proc)
+void CTranscode::RunThumbnail(CFFmpeg_Glue &ffmpeg)
 {
-	proc->AddProcessArg("ffmpeg");
-	proc->AddProcessArg("-i");
-	proc->AddProcessArg(m_src);
-    
-	proc->AddProcessArg("-y");
-
-	// size
-	proc->AddProcessArg("-s");
-	proc->AddProcessArg("160x90");
-	// title
-	proc->AddProcessArg("-title");
-	proc->AddProcessArg(m_src);
-	proc->AddProcessArg("-comment");
-	proc->AddProcessArg(m_src);
-
-	proc->AddProcessArg("-r");
-	proc->AddProcessArg("1");
-	proc->AddProcessArg("-t");
-	proc->AddProcessArg("1");
-
-	proc->AddProcessArg("-ss");
-	proc->AddProcessArg("3:00.00");
-
-	proc->AddProcessArg("-an");
-
-	proc->AddProcessArg("-f");
-	proc->AddProcessArg("mjpeg");
-
 	QFileInfo fi(m_src);
 	QString target_path = GetAppSettings()->TargetDir().filePath(fi.baseName() + ".thm");
-		
-	proc->AddProcessArg(target_path);
-    return proc->Start();
+	ffmpeg.RunThumbnail(m_src, target_path, "00:00:00.00");
+	printf("done !\n");
 }
+
 
 //
 // Queue of pending and running jobs
@@ -263,22 +207,33 @@ bool CJobQueue::Start()
 
 	CTranscode &new_job = m_queue.front();
 
-	CJobControlImp *job_ctrl = new CJobControlImp(UpdateTranscodeProgress, this);
-	
 	m_total_frames = new_job.TotalFrames();
+
+	g_main_win->enableStart(false);
+
+	do {
+		new_job.RunTranscode(m_ffmpeg, UpdateTranscodeProgress2, this);
+		new_job.RunThumbnail(m_ffmpeg);
 	
-	m_curr_process = new_job.Start(job_ctrl);
+		// current job done: remove from gui
+		g_main_win->removeFromQueue(m_queue.front().Id());
+	
+		// done with it - remove from queue
+		m_queue.pop_front();
+	} while ( !m_is_aborted && !m_queue.empty() );
+	
+	g_main_win->enableStart(true);
+	g_main_win->m_xfer_win->refreshData();
 	
 	return true;
 }
 
 bool CJobQueue::Abort()
 {
-	//m_curr_process->writeToStdin("q");
-	m_curr_process->tryTerminate();
-	QTimer::singleShot(500, m_curr_process, SLOT( kill() ) );
+	m_is_aborted = true;
 	
-	g_main_win->updateProgress(0, 0);
+	g_main_win->enableStart(true);
+
 	return true;
 }
 
@@ -305,75 +260,17 @@ bool CJobQueue::Remove(int job_id)
 	return false;
 }
 
-void CJobQueue::ParseFfmpegOutputLine(const char *line)
-{
-	//printf("XXX0 => %s\n", line);
-	if ( m_in_progress_out ) {
-		char *p = strstr(line, "frame=");
-		if ( !p ) {
-			return;
-		}
-		p += strlen("frame=");
-		while ( isspace(*p) ) p++;
-		int frame;
-		if ( sscanf(p, "%d", &frame) != 1 ) {
-			return;
-		}		
-		int progress = (frame * 100) / m_total_frames;
-		//printf("frame = %d progress = %d\n", frame, progress);
-		g_main_win->updateProgress(progress, frame);
-	} else {
-		if ( strstr(line, "frame=") ) {
-			m_in_progress_out = true;
-		}
-	}
-}
-
-void CJobQueue::UpdateTranscodeProgress(void *ptr, const char *outline)
+int CJobQueue::UpdateTranscodeProgress(void *ptr, int frame)
 {
 	CJobQueue *This = (CJobQueue *)ptr;
-	if ( outline ) {
-		This->ParseFfmpegOutputLine(outline);
-	} else {
-		This->TranscodeProcessDone();
-	}
-}
 
-void CJobQueue::TranscodeProcessDone()
-{
-	printf("TranscodeProcessDone\n");
-
-	CTranscode &new_job = m_queue.front();
-
-	CJobControlImp *job_ctrl = new CJobControlImp(UpdateThumbnailProgress, this);
-	m_curr_process = new_job.StartThumbnail(job_ctrl);
-}
-
-void CJobQueue::UpdateThumbnailProgress(void *ptr, const char *outline)
-{
-	CJobQueue *This = (CJobQueue *)ptr;
-	if ( outline ) {
-	} else {
-		This->ThumbnailProcessDone();
-	}
-}
-
-
-void CJobQueue::ThumbnailProcessDone()
-{
-	g_main_win->updateProgress(0, 0);
-
-	// current job done: remove from gui
-	g_main_win->removeFromQueue(m_queue.front().Id());
-
-	// done with it - remove from queue
-	m_queue.pop_front();
-
-	// start next
-	if ( m_is_aborted || !Start() ) {
-		g_main_win->enableStart(true);
-		g_main_win->m_xfer_win->refreshData();
-	}
+	int progress = (frame * 100) / This->m_total_frames;
+	//printf("frame = %d progress = %d\n", frame, progress);
+	g_main_win->updateProgress(progress, frame);
+	
+	qApp->processEvents();
+	
+	return This->m_is_aborted ? 0 : 1;
 }
 
 //
@@ -668,16 +565,27 @@ bool CPSPMovieLocalList::Delete(int id)
 int main( int argc, char **argv )
 {
 	QApplication app(argc, argv);
+
 	MainWin mainwin;
 	g_main_win = &mainwin;
 
-	AV_Init();
-	CanDoPSP();
+//	AV_Init();
+//	CanDoPSP();
 		
 	app.setMainWidget(&mainwin);
 	mainwin.show();
 	
 	GetAppSettings();
+
+//	CFFmpeg_Glue ffmpeg_glue;
+//	
+//	if ( ffmpeg_glue.IsValidVersion() ) {
+//		printf("FFMPEG: version OK\n");
+//	} else {
+//		printf("FFMPEG: version BAD\n");
+//	}
+//	
+//	ffmpeg_glue.RunTranscode("test.avi", "out.mp4", "64", "768", "zhopa zhopa", 0, 0);
 	
 	return app.exec();
 }

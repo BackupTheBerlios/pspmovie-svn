@@ -59,6 +59,11 @@ void MainWin::enableStart( bool enable )
 {
     ActionStart->setEnabled(enable);
     ActionAbort->setEnabled(!enable);
+    if ( enable ) {
+	lineEdit_CurrFile->setText("");
+	lCDNumber_TotalFrames->display(0);
+	progressBar_Encode->setProgress(0);
+     }
 }
 
 
@@ -93,12 +98,8 @@ void MainWin::startQueue()
     CTranscode *job = g_job_queue.NextJob();
     lineEdit_CurrFile->setText(job->ShortName());
     lCDNumber_TotalFrames->display(job->TotalFrames());
-    if ( g_job_queue.Start() ) {
-	enableStart(false);
-    } else {
-	lineEdit_CurrFile->setText("");
-	lCDNumber_TotalFrames->display(0);
-    }
+    
+    g_job_queue.Start();
     
 }
 

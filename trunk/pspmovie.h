@@ -44,9 +44,9 @@ class CTranscode {
 
 		int TotalFrames();
 		
-		QProcess *Start(CJobControlImp *ctrl);
-		QProcess *StartThumbnail(CJobControlImp *ctrl);
-
+		void RunTranscode(CFFmpeg_Glue &, int (cb)(void *, int), void *);
+		void RunThumbnail(CFFmpeg_Glue &);
+		
 		int Id() { return m_id; }
 		
 		// for display in gui
@@ -59,6 +59,8 @@ class CTranscode {
 };
 
 class CJobQueue {
+		CFFmpeg_Glue m_ffmpeg;
+		
 		std::list<CTranscode> m_queue;
 		
 		//
@@ -70,13 +72,8 @@ class CJobQueue {
 		
 		int m_total_frames;
 		
-		void ParseFfmpegOutputLine(const char *line);
-		
-		static void UpdateTranscodeProgress(void *, const char *);
-		static void UpdateThumbnailProgress(void *, const char *);
+		static int UpdateTranscodeProgress(void *This, int frame);
 
-		void TranscodeProcessDone();
-		void ThumbnailProcessDone();
 	public:
 		CJobQueue();
 		

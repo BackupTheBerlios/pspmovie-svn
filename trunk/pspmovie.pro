@@ -8,10 +8,15 @@ unix:LIBS	+= -lhal -lhal-storage -lavformat -lavcodec
 unix:INCLUDEPATH	+= /usr/include/hal /usr/include/dbus-1.0/ /usr/lib/dbus-1.0/include/
 
 HEADERS	+= pspmovie.h \
-	avutils.h
+	avutils.h \
+	ffmpeg_glue.h \
+	ffmpeg_opt.h
 
 SOURCES	+= pspmovie.cpp \
-	avutils.cpp
+	avutils.cpp \
+	ffmpeg_cmdutils.c \
+	ffmpeg_opt.c \
+	ffmpeg_patched.c
 
 FORMS	= mainwin.ui \
 	newjobdialog.ui \
