@@ -173,7 +173,7 @@ void CTranscode::RunTranscode(CFFmpeg_Glue &ffmpeg, int (cb)(void *, int), void 
 {
 	QFileInfo fi(m_src);
 	QString target_path = GetAppSettings()->TargetDir().filePath(fi.baseName() + ".mp4");
-	ffmpeg.RunTranscode(m_src, target_path, m_s_bitrate, m_v_bitrate, m_src, cb, ptr);
+	ffmpeg.RunTranscode(m_src, target_path, m_s_bitrate, m_v_bitrate, fi.baseName(), cb, ptr);
 	printf("done !\n");
 }
 

@@ -1,17 +1,30 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
 #include <ffmpeg/avformat.h>
 #include <ffmpeg/avcodec.h>
 
-#include <stdio.h>
-#include <string.h>
+/*
+ * FFMPEG have a "feature" - it can't parse headers of MP4
+ * files properly. Actually, all "atom" parsing thing is
+ * missing. So, even it can generate correct header with
+ * title, it can't read it later.
+ * That's why mpeg4ip (libmp4v2) is used.
+ */
+#include <inttypes.h>
+
+// mp4 need this
+typedef uint8_t u_int8_t;
+typedef uint16_t u_int16_t;
+typedef uint32_t u_int32_t;
+typedef uint64_t u_int64_t;
+
+#include <mp4.h>
 
 #include "avutils.h"
 
 #include "ffmpeg_glue.h"
-
-void AV_Init()
-{
-	av_register_all();
-}
 
 bool CanDoPSP()
 {
@@ -29,6 +42,7 @@ CAVInfo::CAVInfo(const char *filename)
 {
 	m_have_vstream = false;
 	m_codec_ok = false;
+	m_title[0] = 0;
 
 	if ( !filename ) {
 		return;
@@ -50,13 +64,6 @@ CAVInfo::CAVInfo(const char *filename)
 	printf("Title [%s] comment [%s]\n", fctx->title, fctx->comment);
 #endif
 
-	if ( strlen(fctx->comment) ) {
-		strncpy(m_title, fctx->comment, sizeof(m_title)-1);
-		m_title[sizeof(m_title)-1] = 0;
-	} else {
-		m_title[0] = 0;
-	}
-	
  	m_sec = fctx->duration / AV_TIME_BASE;
     m_usec = fctx->duration % AV_TIME_BASE;
     
@@ -89,94 +96,100 @@ CAVInfo::CAVInfo(const char *filename)
 	m_codec_ok = codec != 0;
 	
 	m_frame_count = st->nb_frames ? st->nb_frames : int(m_sec * m_fps);
-}
-
-#ifdef AVLIB_TEST
-uint32_t my_mp4ff_read(void *user_data, void *buffer, uint32_t length)
-{
-	FILE *f = (FILE *)user_data;
-	size_t count = fread(buffer, length, 1, f);
-	return count;
-}
-
-uint32_t my_mp4ff_seek(void *user_data, uint64_t position)
-{
-	FILE *f = (FILE *)user_data;
-	return fseek(f, position, SEEK_SET);
-}
-
-void mp4fftest(const char *file)
-{
-	printf("mp4fftest for [%s]\n", file);
-
-	mp4ff_callback_t cb;
-	cb.read = my_mp4ff_read;
-	cb.seek = my_mp4ff_seek;
-	cb.write = 0;
-	cb.truncate = 0;
 	
-	FILE *f = fopen(file, "r");
-	if (!f) {
-		printf("fopen failed\n");
-		return;
+	//
+	// If we have .mp4 file, attempt to read title
+	//
+	const char *ext = filename + strlen(filename) - 4;
+	if ( !strcmp(ext, ".mp4") || !strcmp(ext, ".MP4") ) {
+		ReadMP4(filename);
 	}
-	cb.user_data = f;
-	
-	mp4ff_t *mp4 = mp4ff_open_read(&cb);
-	
-	for(int i = 0; i < mp4ff_meta_get_num_items(mp4); i++) {
-		char *item, *value;
-		mp4ff_meta_get_by_index(mp4, i, &item, &value);
-		printf("META: [%s] => [%s]\n", item, value);
-	}
-	printf("mp4fftest done\n");
 }
 
-void mp4test(const char *file)
+uint32_t read_be32(uint8_t *data)
 {
-	printf("mp4test for [%s]\n", file);
-	char *info = MP4FileInfo(file, 0);
-	printf("Info = [%s]\n", info);
-	MP4FileHandle mp4File = MP4Modify(file, MP4_DETAILS_ERROR);
+	uint32_t val = (data[0] << 24) | (data[1] << 16) |
+		(data[2] << 8) | data[3];
+	return val;
+}
+
+int16_t read_be16(uint8_t *data)
+{
+	uint16_t val = (data[0] << 8) | data[1];
+	return val;
+}
+
+int MP4_moov_uuid_parse(uint8_t *uuid_data, uint32_t data_len, char *title)
+{
+	uint8_t *data = uuid_data;
+	
+	uint32_t uuid_len = read_be32(data);
+	data += sizeof(uint32_t);
+	if ( uuid_len != data_len ) {
+		return 0;
+	}
+	//printf("uuid len = %08lx\n", uuid_len);
+	
+	// "MTDT" tag expected
+	uint32_t tag = read_be32(data);
+	if ( tag != 0x4d544454 ) {
+		return 0;
+	}
+	data += sizeof(uint32_t);
+	//printf("tag = %08lx\n", tag);
+	if ( read_be16(data) != 0x0001 ) {
+		return 0;
+	}
+	data += sizeof(uint16_t);
+	uint16_t title_len = (read_be16(data) - 10) / 2;
+	data += sizeof(uint16_t);
+
+	if ( read_be32(data) != 0x00000001 ) {
+		return 0;
+	}
+	data += sizeof(uint32_t);
+	
+	uint16_t lang_code = read_be16(data);
+	data += sizeof(uint16_t);
+	
+	if ( read_be16(data) != 0x0001 ) {
+		return 0;
+	}
+	data += sizeof(uint16_t);
+
+	//printf("title len = %04lx (%d) \n", title_len, title_len);
+	if ( title_len > (data_len - (data - uuid_data)) ) {
+		title_len = data_len - (data - uuid_data) - 1;
+	}
+
+	for(uint16_t i = 0; i < title_len; i++) {
+		uint16_t wc = read_be16(data);
+		//printf("\twc=%04x\n", wc);
+		data += sizeof(uint16_t);
+		title[i] = (char)(wc & 0xff);
+	}
+	title[title_len] = 0;
+
+	return 1;
+}
+
+void CAVInfo::ReadMP4(const char *file)
+{
+	MP4FileHandle mp4File = MP4Read(file, MP4_DETAILS_ERROR);
 	if ( !mp4File ) {
-		printf("MP4Read failed\n");
 		return;
 	}
-	int i = 0;
-	const char *name;
 	uint32_t vsize;
 	uint8_t *value;
-	while ( MP4GetMetadataByIndex(mp4File, i, &name, &value, &vsize) ) {
-		printf("META: [%s] => [%s]\n", name, value);
-		i++;
-	}
-	char *metaname;
-	if ( MP4GetMetadataName(mp4File, &metaname) ) {
-		printf("META NAME:\n");
-	}
-	MP4Dump(mp4File, stdout, 0);
-	
-	printf("mp4test done\n");
-}
+	char *pname = "moov.uuid.data";
 
-int main(int argc, char *argv[])
-{
-	AV_Init();
-	
-	printf("can do PSP - [%s]\n", CanDoPSP() ? "yes" : "no");
-	
-	const char *file = argc > 1 ? argv[1] : "test.avi";
-	
-	//mp4fftest(file);
-	mp4test(file);
-	
-	//CAVInfo i(file);
-	//printf("Info: title %s\n", i.Title());
-	//printf("Info: %d.%d sec %d frames %f fps\n", i.Sec(), i.Usec(), i.FrameCount(), i.Fps());
-	
-	return 0;
+	MP4GetBytesProperty(mp4File, pname, &value, &vsize);
+	if ( vsize ) {
+		MP4_moov_uuid_parse(value, vsize, m_title);
+		free(value);
+	}
+	MP4Close(mp4File);
 }
-#endif
 
 CFFmpeg_Glue::CFFmpeg_Glue()
 {

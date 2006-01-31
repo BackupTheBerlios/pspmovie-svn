@@ -11,6 +11,9 @@ class CAVInfo {
 		
 		// same size as in libavformat
 		char m_title[512];
+
+		// call to mpeg4ip to read title
+		void ReadMP4(const char *file);
 	public:
 		CAVInfo(const char *file);
 		CAVInfo() { /* for stl */ }
@@ -27,7 +30,6 @@ class CAVInfo {
 		const char *Title() { return &m_title[0]; }
 };
 
-void AV_Init();
 
 bool CanDoPSP();
 
