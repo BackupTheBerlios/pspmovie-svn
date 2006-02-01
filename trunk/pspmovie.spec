@@ -10,9 +10,8 @@ Source: %{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 
 BuildRequires: ffmpeg-devel >= 0.4.9
-BuildRequires: xvidcore >= 1.0.3
-BuildRequires: faac-devel >= 1.24
-BuildRequires: faad2 >= 2.0
+BuildRequires: faad2-devel >= 2.0
+BuildRequires: qt-devel >= 3.3.5
 
 %description
 The pspmovie allows the user to transcode video files into
