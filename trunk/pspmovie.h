@@ -149,7 +149,6 @@ class CAppSettings {
 		
 		QString m_ffmpeg_path;
 
-		QString Get_FFMPEG();
 	public:
 		CAppSettings();
 		~CAppSettings();

@@ -8,6 +8,9 @@
 #include <math.h>
 #include <unistd.h>
 
+#include <ffmpeg/avformat.h>
+#include <ffmpeg/avcodec.h>
+
 #include "pspmovie.h"
 
 #include "mainwin.h"
@@ -333,18 +336,6 @@ int CAppSettings::GetNewOutputNameIdx(const QDir &trg_dir) const
 	return -1;
 }
 
-QString CAppSettings::Get_FFMPEG()
-{
-	QString ffmpeg;
-#if defined(Q_WS_X11)
-	// on unix ffmpeg is expected to be in the path
-	return "ffmpeg";
-#endif
-#ifdef Q_WS_WIN
-#endif
-	return ffmpeg;
-}
-
 //
 // Class representing transcoded file
 //
@@ -434,7 +425,7 @@ bool CPSPMovie::TransferTo(QWidget *parent, const QString &target_dir, int trg_i
 			trg_thmb = src_title + ".thm";
 		} else {
 			trg_movie.sprintf("from_PSP_%05d.mp4", s_next_id);
-			trg_thmb.sprintf("from_PSP_%05d.thm", trg_idx);
+			trg_thmb.sprintf("from_PSP_%05d.thm", s_next_id);
 		}
 		trg_idx = s_next_id++;
 	} else {
@@ -569,23 +560,19 @@ int main( int argc, char **argv )
 	MainWin mainwin;
 	g_main_win = &mainwin;
 
-//	AV_Init();
-//	CanDoPSP();
+	if ( !CanDoPSP() ) {
+		QMessageBox::critical(0, "ERROR: bad ffmpeg library",
+			"FFMPEG library you have can not encode PSP format correctly\n"
+			"You have version \"" FFMPEG_VERSION "\" of FFMPEG"
+			);
+		return -1;
+	}
 		
 	app.setMainWidget(&mainwin);
 	mainwin.show();
 	
 	GetAppSettings();
 
-//	CFFmpeg_Glue ffmpeg_glue;
-//	
-//	if ( ffmpeg_glue.IsValidVersion() ) {
-//		printf("FFMPEG: version OK\n");
-//	} else {
-//		printf("FFMPEG: version BAD\n");
-//	}
-//	
-//	ffmpeg_glue.RunTranscode("test.avi", "out.mp4", "64", "768", "zhopa zhopa", 0, 0);
 	
 	return app.exec();
 }
