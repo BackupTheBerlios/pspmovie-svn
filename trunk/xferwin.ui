@@ -8,8 +8,8 @@
         <rect>
             <x>0</x>
             <y>0</y>
-            <width>605</width>
-            <height>556</height>
+            <width>714</width>
+            <height>602</height>
         </rect>
     </property>
     <property name="baseSize">
@@ -20,6 +20,9 @@
     </property>
     <property name="caption">
         <string>Transfer files</string>
+    </property>
+    <property name="icon">
+        <pixmap>stock_refresh.png</pixmap>
     </property>
     <property name="acceptDrops">
         <bool>false</bool>
@@ -121,6 +124,9 @@
                             <property name="selectionMode">
                                 <enum>Extended</enum>
                             </property>
+                            <property name="allColumnsShowFocus">
+                                <bool>true</bool>
+                            </property>
                         </widget>
                     </vbox>
                 </widget>
@@ -195,6 +201,9 @@
                             <property name="selectionMode">
                                 <enum>Extended</enum>
                             </property>
+                            <property name="allColumnsShowFocus">
+                                <bool>true</bool>
+                            </property>
                         </widget>
                     </grid>
                 </widget>
@@ -204,7 +213,7 @@
                     </property>
                     <property name="minimumSize">
                         <size>
-                            <width>105</width>
+                            <width>55</width>
                             <height>0</height>
                         </size>
                     </property>
@@ -250,8 +259,8 @@
                             <property name="text">
                                 <string></string>
                             </property>
-                            <property name="iconSet">
-                                <iconset>stock_right.png</iconset>
+                            <property name="pixmap">
+                                <pixmap>stock_right.png</pixmap>
                             </property>
                         </widget>
                         <widget class="QPushButton" row="2" column="0">
@@ -269,8 +278,8 @@
                             <property name="text">
                                 <string></string>
                             </property>
-                            <property name="iconSet">
-                                <iconset>stock_left.png</iconset>
+                            <property name="pixmap">
+                                <pixmap>stock_left.png</pixmap>
                             </property>
                         </widget>
                         <widget class="QPushButton" row="3" column="0">
@@ -286,10 +295,10 @@
                                 </sizepolicy>
                             </property>
                             <property name="text">
-                                <string>Delete</string>
+                                <string></string>
                             </property>
-                            <property name="iconSet">
-                                <iconset>stock_calc-cancel.png</iconset>
+                            <property name="pixmap">
+                                <pixmap>stock_calc-cancel.png</pixmap>
                             </property>
                         </widget>
                         <spacer row="4" column="0">
@@ -365,9 +374,6 @@
                 <widget class="QLabel">
                     <property name="name">
                         <cstring>pixmapLabel1</cstring>
-                    </property>
-                    <property name="pixmap">
-                        <pixmap>stock_open.png</pixmap>
                     </property>
                     <property name="scaledContents">
                         <bool>true</bool>

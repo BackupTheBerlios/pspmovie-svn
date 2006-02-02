@@ -56,8 +56,10 @@ void XferWin::checkPSP()
     char *mount_point = find_psp_mount(error_buff, sizeof(error_buff));
     if ( mount_point ) {
 	m_mount_point = QDir::convertSeparators(QDir::cleanDirPath(mount_point));
+	groupBox_PSP->setTitle("PSP location (detected)");
 	free(mount_point);
     } else {
+	groupBox_PSP->setTitle("Target location (PSP not detected)");
 	m_mount_point = QDir::homeDirPath();
     }
     lineEdit_Mount->setText(m_mount_point);
