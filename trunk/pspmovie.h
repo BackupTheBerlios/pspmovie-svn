@@ -35,6 +35,7 @@ class CTranscode {
 		// output stream params
 		QString m_size;
 		QString m_s_bitrate, m_v_bitrate;
+		QString m_v_padding, m_h_padding;
 		
 		// input stream params
 		CAVInfo m_in_info;
@@ -52,7 +53,7 @@ class CTranscode {
 		static int m_curr_id;
 	public:
 	
-		CTranscode(QString &src, QString &size,
+		CTranscode(QString &src,
 			QString &s_bitrate, QString &v_bitrate, bool fix_aspect);
 		
 		bool IsOK();
@@ -78,17 +79,16 @@ class CJobQueue {
 		
 		std::list<CTranscode> m_queue;
 		
-		//
-		// current ffmpeg process info
-		QProcess *m_curr_process;
-		bool m_in_progress_out;
+		int m_total_frames;
 		
 		bool m_is_aborted;
 		
-		int m_total_frames;
+		//
+		// in frames
+		int m_update_interval, m_update_countdown;
+		time_t m_last_update;
 		
 		static int UpdateTranscodeProgress(void *This, int frame);
-
 	public:
 		CJobQueue();
 		

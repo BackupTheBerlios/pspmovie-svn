@@ -64,7 +64,6 @@ CAVInfo::CAVInfo(const char *filename)
 	}
 			
 	AVFormatContext *fctx;
-	
 	if ( av_open_input_file(&fctx, filename, 0, 0, 0) != 0 ) {
 		printf("av_open_input_file - error\n");
 		return;
@@ -81,10 +80,12 @@ CAVInfo::CAVInfo(const char *filename)
 
  	m_sec = fctx->duration / AV_TIME_BASE;
     m_usec = fctx->duration % AV_TIME_BASE;
-    
+    m_width = m_height = 0;
 	int videoStream = -1;
 	for(int i = 0; i < fctx->nb_streams; i++) {
 		if ( fctx->streams[i]->codec->codec_type == CODEC_TYPE_VIDEO) {
+			m_width = fctx->streams[i]->codec->width;
+			m_height = fctx->streams[i]->codec->height;
 	        videoStream = i;
 	        m_have_vstream = true;
     	    break;
@@ -232,6 +233,7 @@ bool CFFmpeg_Glue::RunTranscode(
 			const char *infile, const char *outfile,
 			const char *abitrate, const char *vbitrate,
 			const char *title,
+			const char *size, const char *v_pad, const char *h_pad,
 			int (*callback)(void *, int frame), void *uptr)
 {
 	const char *ffmpeg_opts[256];
@@ -243,14 +245,22 @@ bool CFFmpeg_Glue::RunTranscode(
 	ffmpeg_opts[i++] = "-b"; ffmpeg_opts[i++] = vbitrate;
 	ffmpeg_opts[i++] = "-ab"; ffmpeg_opts[i++] = abitrate;
 	ffmpeg_opts[i++] = "-title"; ffmpeg_opts[i++] = title;
-	ffmpeg_opts[i++] = "-s"; ffmpeg_opts[i++] = "320x240";
+	ffmpeg_opts[i++] = "-s"; ffmpeg_opts[i++] = size;
 
 	ffmpeg_opts[i++] = "-f"; ffmpeg_opts[i++] = "psp";
 	ffmpeg_opts[i++] = "-r"; ffmpeg_opts[i++] = "29.970030";
 	ffmpeg_opts[i++] = "-ar"; ffmpeg_opts[i++] = "24000";
 	ffmpeg_opts[i++] = "-ac"; ffmpeg_opts[i++] = "2";
 
-
+	if ( v_pad && strlen(v_pad) ) {
+		ffmpeg_opts[i++] = "-padtop"; ffmpeg_opts[i++] = v_pad;
+		ffmpeg_opts[i++] = "-padbottom"; ffmpeg_opts[i++] = v_pad;
+	}
+	if ( h_pad && strlen(h_pad) ) {
+		ffmpeg_opts[i++] = "-padleft"; ffmpeg_opts[i++] = h_pad;
+		ffmpeg_opts[i++] = "-padright"; ffmpeg_opts[i++] = h_pad;
+	}
+	
 	// current call params
 	
 	ffmpeg_opts[i++] = outfile;

@@ -133,11 +133,19 @@ void CJobControlImp::ProcessDone()
 //
 int CTranscode::m_curr_id = 1001;
 
-CTranscode::CTranscode(QString &src, QString &size,
+CTranscode::CTranscode(QString &src,
 			QString &s_bitrate, QString &v_bitrate, bool fix_aspect) : m_in_info(src)
 {
+	if ( !IsOK() ) {
+		return;
+	}
+	
 	m_src = src;
-	m_size = size;
+
+	// some tell, that other resolution is possible. Never find it to
+	// be true	
+	m_size = "320x240";
+
 	m_s_bitrate = s_bitrate;
 	m_v_bitrate = v_bitrate;
 	m_fix_aspect = fix_aspect;
@@ -145,9 +153,9 @@ CTranscode::CTranscode(QString &src, QString &size,
 	m_id = m_curr_id++;
 	
 	if ( m_src.length() > 50 ) {
-		QDir d(m_src);
-		QString short_path = d.path().left(40) + QDir::convertSeparators(".../");
-		QString short_name = d.dirName().left(20);
+		QFileInfo fi(m_src);
+		QString short_path = fi.dirPath().left(40) + QDir::convertSeparators(".../");
+		QString short_name = fifileName().left(20);
 		m_short_src =  short_path + short_name;
 	} else {
 		m_short_src = m_src;
@@ -160,20 +168,36 @@ CTranscode::CTranscode(QString &src, QString &size,
 	if ( !rate_exp.exactMatch(v_bitrate) ) {
 		Q_ASSERT(false);
 	}
-	QRegExp size_exp("[0-9]{3}x[0-9]{3}");
-	if ( !size_exp.exactMatch(size) ) {
-		Q_ASSERT(false);
-	}
 	
 	s_bitrate.replace("kpbs", "", false);
 	v_bitrate.replace("kpbs", "", false);
 
-	if ( IsOK() ) {
-		int s = m_in_info.Sec() % 60, ms = m_in_info.Usec() / 1000;
-		int h = m_in_info.Sec() / 3600;
-		int m = (m_in_info.Sec() - h*3600) / 60;
-		m_str_duration = QString( "%1:%2:%3.%4" )
-                        .arg( h ) .arg( m ) .arg( s ) .arg( ms );
+	int s = m_in_info.Sec() % 60, ms = m_in_info.Usec() / 1000;
+	int h = m_in_info.Sec() / 3600;
+	int m = (m_in_info.Sec() - h*3600) / 60;
+	m_str_duration = QString( "%1:%2:%3.%4" )
+                    .arg( h ) .arg( m ) .arg( s ) .arg( ms );
+
+	if ( fix_aspect ) {
+		int h, w;
+		float ratio = (float)m_in_info.H() / (float)m_in_info.W();
+		if ( ratio >= (9.0/16.0) ) {
+			h = 240;
+			w = m_in_info.W() * 240 / m_in_info.H();
+		} else {
+			w = 320;
+			h = m_in_info.H() * 320 / m_in_info.W();
+		}
+		int pad_v = (240 - h) / 2;
+		int pad_h = (320 - w) / 2;
+		
+		m_size = QString("%1x%2") .arg(w) . arg(h);
+		if (  pad_v ) {
+			m_v_padding = QString("%1") . arg(pad_v);
+		}
+		if (  pad_h ) {
+			m_h_padding = QString("%1") . arg(pad_h);
+		}
 	}
 }
 
@@ -191,7 +215,8 @@ void CTranscode::RunTranscode(CFFmpeg_Glue &ffmpeg, int (cb)(void *, int), void 
 {
 	QFileInfo fi(m_src);
 	QString target_path = GetAppSettings()->TargetDir().filePath(fi.baseName() + ".mp4");
-	ffmpeg.RunTranscode(m_src, target_path, m_s_bitrate, m_v_bitrate, fi.baseName(), cb, ptr);
+	ffmpeg.RunTranscode(m_src, target_path, m_s_bitrate, m_v_bitrate, fi.baseName(),
+		m_size, m_v_padding, m_h_padding, cb, ptr);
 	printf("done !\n");
 }
 
@@ -212,7 +237,6 @@ CJobQueue g_job_queue;
 
 CJobQueue::CJobQueue()
 {
-	m_curr_process = 0;
 }
 
 bool CJobQueue::Start()
@@ -229,7 +253,11 @@ bool CJobQueue::Start()
 
 		CTranscode &new_job = m_queue.front();
 		m_total_frames = new_job.TotalFrames();
-
+	
+		m_update_interval = m_total_frames / 100;
+		m_update_countdown = m_update_interval;
+		m_last_update = time(0);
+		
 		new_job.RunTranscode(m_ffmpeg, UpdateTranscodeProgress, this);
 		new_job.RunThumbnail(m_ffmpeg);
 	
@@ -282,12 +310,15 @@ int CJobQueue::UpdateTranscodeProgress(void *ptr, int frame)
 {
 	CJobQueue *This = (CJobQueue *)ptr;
 
-	int progress = (frame * 100) / This->m_total_frames;
-	//printf("frame = %d progress = %d\n", frame, progress);
-	g_main_win->updateProgress(progress, frame);
-	
+	time_t curr_time = time(0);
+	if ( !(--This->m_update_countdown) || (curr_time - This->m_last_update) ) {
+		int progress = (frame * 100) / This->m_total_frames;
+		//printf("frame = %d progress = %d\n", frame, progress);
+		g_main_win->updateProgress(progress, frame);
+		This->m_update_countdown = This->m_update_interval;
+		This->m_last_update = time(0);
+	}
 	qApp->processEvents();
-	
 	return This->m_is_aborted ? 0 : 1;
 }
 

@@ -21,6 +21,7 @@ class CAVInfo {
 		bool m_codec_ok;
 		
 		int m_sec, m_usec;
+		int m_width, m_height;
 		float m_fps;
 		int m_frame_count;
 		
@@ -39,6 +40,8 @@ class CAVInfo {
 		int Usec() { return m_usec; }
 		
 		float Fps() { return m_fps; }
+		int W() { return m_width; }
+		int H() { return m_height; }
 		
 		int FrameCount() { return m_frame_count; }
 		
@@ -73,6 +76,7 @@ class CFFmpeg_Glue {
 			const char *infile, const char *outfile,
 			const char *abitrate, const char *vbitrate,
 			const char *title,
+			const char *size, const char *v_pad, const char *h_pad,
 			int (*callback)(void *, int frame), void *uptr);
 		//
 		// Call to create thumbnail image.
