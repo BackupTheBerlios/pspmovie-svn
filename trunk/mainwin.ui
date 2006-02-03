@@ -33,7 +33,7 @@
         </size>
     </property>
     <property name="caption">
-        <string>Coder</string>
+        <string>PSPMovie</string>
     </property>
     <property name="icon">
         <pixmap>sonypsp.png</pixmap>

@@ -323,6 +323,9 @@ int CJobQueue::UpdateTranscodeProgress(void *ptr, int frame)
 		This->m_last_update = time(0);
 	}
 	qApp->processEvents();
+	if ( ! qApp->mainWidget()->isShown() ) {
+		return 0;
+	}
 	return This->m_is_aborted ? 0 : 1;
 }
 
@@ -617,7 +620,8 @@ int main( int argc, char **argv )
 			);
 		return -1;
 	}
-		
+	
+	app.connect( &app, SIGNAL( lastWindowClosed() ), &app, SLOT( quit() ) );
 	app.setMainWidget(&mainwin);
 	mainwin.show();
 	
