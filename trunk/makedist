@@ -14,10 +14,11 @@ tar xzf pspmovie.tar.gz
 mv pspmovie "pspmovie-${VERSION}"
 /bin/rm pspmovie.tar.gz
 
-tar cf - "pspmovie-${VERSION}" | bzip2 -c > "pspmovie-${VERSION}.tar.bz2"
+/bin/cp README TODO COPYING ChangeLog "pspmovie-${VERSION}"
+tar cf - "pspmovie-${VERSION}" | gzip -c > "pspmovie-${VERSION}.tar.gz"
 
-if (!(-f "pspmovie-${VERSION}.tar.bz2")) then
-	echo "Something fcked up: pspmovie-${VERSION}.tar.bz2 doesn't created"
+if (!(-f "pspmovie-${VERSION}.tar.gz")) then
+	echo "Something fcked up: pspmovie-${VERSION}.tar.gz doesn't created"
 	exit(-1)
 endif
 
