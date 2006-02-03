@@ -157,7 +157,7 @@ CTranscode::CTranscode(QString &src,
 		QString short_path = fi.dirPath().left(40) + QDir::convertSeparators(".../");
 		QString short_name = fi.fileName();
 		if ( fi.fileName().length() > 20 ) {
-			short_name = fi.baseName().left(10) + "..." +
+			short_name = fi.baseName(true).left(10) + "..." +
 				fi.fileName().right(10);
 		}
 		m_short_src =  short_path + short_name;
@@ -218,8 +218,8 @@ int CTranscode::TotalFrames()
 void CTranscode::RunTranscode(CFFmpeg_Glue &ffmpeg, int (cb)(void *, int), void *ptr)
 {
 	QFileInfo fi(m_src);
-	QString target_path = GetAppSettings()->TargetDir().filePath(fi.baseName() + ".mp4");
-	ffmpeg.RunTranscode(m_src, target_path, m_s_bitrate, m_v_bitrate, fi.baseName(),
+	QString target_path = GetAppSettings()->TargetDir().filePath(fi.baseName(true) + ".mp4");
+	ffmpeg.RunTranscode(m_src, target_path, m_s_bitrate, m_v_bitrate, fi.baseName(true),
 		m_size, m_v_padding, m_h_padding, cb, ptr);
 	printf("done !\n");
 }
@@ -227,7 +227,7 @@ void CTranscode::RunTranscode(CFFmpeg_Glue &ffmpeg, int (cb)(void *, int), void 
 void CTranscode::RunThumbnail(CFFmpeg_Glue &ffmpeg)
 {
 	QFileInfo fi(m_src);
-	QString target_path = GetAppSettings()->TargetDir().filePath(fi.baseName() + ".thm");
+	QString target_path = GetAppSettings()->TargetDir().filePath(fi.baseName(true) + ".thm");
 	ffmpeg.RunThumbnail(m_src, target_path, "00:00:00.00");
 	printf("done !\n");
 }
@@ -401,8 +401,8 @@ CPSPMovie::CPSPMovie(QFileInfo *info) : m_dir(info->dirPath(TRUE))
 		m_thmb_name = info->baseName().upper() + ".THM";
 	} else {
 		m_id = s_next_id++;
-		m_movie_name = info->baseName() + ".mp4";
-		m_thmb_name = info->baseName() + ".thm";
+		m_movie_name = info->baseName(true) + ".mp4";
+		m_thmb_name = info->baseName(true) + ".thm";
 	}
 
 	printf("Test thumbnail at [%s]\n", (const char *)m_dir.filePath(m_thmb_name));
