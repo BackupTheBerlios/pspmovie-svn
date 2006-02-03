@@ -35,6 +35,9 @@
     <property name="caption">
         <string>Coder</string>
     </property>
+    <property name="icon">
+        <pixmap>sonypsp.png</pixmap>
+    </property>
     <property name="dockWindowsMovable">
         <bool>false</bool>
     </property>

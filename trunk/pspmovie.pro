@@ -45,7 +45,8 @@ IMAGES	= images/stock_calc-cancel.png \
 	images/stock_down.png \
 	images/stock_up.png \
 	images/stock_left.png \
-	images/stock_right.png
+	images/stock_right.png \
+	images/sonypsp.png
 
 unix {
   UI_DIR = .ui

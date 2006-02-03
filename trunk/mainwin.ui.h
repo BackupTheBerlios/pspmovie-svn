@@ -43,12 +43,11 @@ void MainWin::newJob()
     }
     
     QString src = dlg.lineEdit_File->text();
-    QString size = dlg.comboBox_TargetSize->currentText();
     QString snd_bitrate = dlg.comboBox_TargetSound->currentText();
     QString video_bitrate = dlg.comboBox_TargetVideo->currentText();
     bool fix_aspect = dlg.checkBox_FixAspect->isChecked();
     
-    CTranscode new_job(src, size, snd_bitrate, video_bitrate, fix_aspect);
+    CTranscode new_job(src, snd_bitrate, video_bitrate, fix_aspect);
     if ( g_job_queue.Add(new_job) ) {
 	new CQueueListViewItem(listView_Queue, new_job);
     }
