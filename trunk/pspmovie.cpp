@@ -155,7 +155,11 @@ CTranscode::CTranscode(QString &src,
 	if ( m_src.length() > 50 ) {
 		QFileInfo fi(m_src);
 		QString short_path = fi.dirPath().left(40) + QDir::convertSeparators(".../");
-		QString short_name = fifileName().left(20);
+		QString short_name = fi.fileName();
+		if ( fi.fileName().length() > 20 ) {
+			short_name = fi.baseName().left(10) + "..." +
+				fi.fileName().right(10);
+		}
 		m_short_src =  short_path + short_name;
 	} else {
 		m_short_src = m_src;
