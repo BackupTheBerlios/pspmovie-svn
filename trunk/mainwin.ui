@@ -156,22 +156,6 @@
                 <number>0</number>
             </property>
         </widget>
-        <widget class="QLineEdit">
-            <property name="name">
-                <cstring>lineEdit_CurrFile</cstring>
-            </property>
-            <property name="enabled">
-                <bool>false</bool>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>84</x>
-                    <y>19</y>
-                    <width>485</width>
-                    <height>21</height>
-                </rect>
-            </property>
-        </widget>
         <widget class="QLabel">
             <property name="name">
                 <cstring>textLabel5</cstring>
@@ -243,6 +227,30 @@
             </property>
             <property name="segmentStyle">
                 <enum>Flat</enum>
+            </property>
+        </widget>
+        <widget class="QLineEdit">
+            <property name="name">
+                <cstring>lineEdit_CurrFile</cstring>
+            </property>
+            <property name="enabled">
+                <bool>true</bool>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>84</x>
+                    <y>19</y>
+                    <width>485</width>
+                    <height>21</height>
+                </rect>
+            </property>
+            <property name="font">
+                <font>
+                    <bold>1</bold>
+                </font>
+            </property>
+            <property name="readOnly">
+                <bool>true</bool>
             </property>
         </widget>
     </widget>
