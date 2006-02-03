@@ -8,6 +8,7 @@ unix:LIBS	+= -lhal -lhal-storage -lavformat -lavcodec -lmp4v2
 unix:INCLUDEPATH	+= /usr/include/hal /usr/include/dbus-1.0/ /usr/lib/dbus-1.0/include/
 
 HEADERS	+= pspmovie.h \
+	pspdetect.h \
 	avutils.h \
 	ffmpeg_glue.h \
 	ffmpeg_opt.h \
