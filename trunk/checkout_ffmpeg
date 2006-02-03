@@ -1,0 +1,16 @@
+#!/bin/tcsh
+
+#
+# Release version of ffmpeg does not produce correct mp4 header for PSP
+# files. On the other hand, cvs version with --enable-xvid doesn't compile
+# with release version of xvidcore.
+#
+
+cvs -z9 -d:pserver:anonymous@mplayerhq.hu:/cvsroot/ffmpeg co ffmpeg
+
+cd ffmpeg
+
+./configure --disable-ffplay --disable-ffserver --disable-v4l --enable-gpl --enable-a52 --enable-faad
+
+make
+
