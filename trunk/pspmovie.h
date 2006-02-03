@@ -39,18 +39,14 @@ class CTranscode {
 		
 		// input stream params
 		CAVInfo m_in_info;
-		/*
-		int m_width, m_height;
-		// duration is in msec. frame count is 
-		// estimation from "duration x fps" rounded up
-		int m_duration, m_frame_count;
-		float m_fps;
-		*/
+
 		QString m_str_duration;
 		
 		// for lookup in job queue
 		int m_id;
 		static int m_curr_id;
+		
+		bool m_being_run;
 	public:
 	
 		CTranscode(QString &src,
@@ -60,6 +56,7 @@ class CTranscode {
 
 		int TotalFrames();
 		
+		bool IsRunning() { return m_being_run; }
 		void RunTranscode(CFFmpeg_Glue &, int (cb)(void *, int), void *);
 		void RunThumbnail(CFFmpeg_Glue &);
 		
