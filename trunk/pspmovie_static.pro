@@ -1,5 +1,6 @@
 TEMPLATE	= app
 LANGUAGE	= C++
+TARGET      = pspmovie
 
 CONFIG	+= qt debug
 
