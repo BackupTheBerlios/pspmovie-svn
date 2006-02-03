@@ -139,7 +139,7 @@ CTranscode::CTranscode(QString &src,
 	if ( !IsOK() ) {
 		return;
 	}
-	
+	m_being_run = false;
 	m_src = src;
 
 	// some tell, that other resolution is possible. Never find it to
@@ -217,11 +217,11 @@ int CTranscode::TotalFrames()
 
 void CTranscode::RunTranscode(CFFmpeg_Glue &ffmpeg, int (cb)(void *, int), void *ptr)
 {
+	m_being_run = true;
 	QFileInfo fi(m_src);
 	QString target_path = GetAppSettings()->TargetDir().filePath(fi.baseName(true) + ".mp4");
 	ffmpeg.RunTranscode(m_src, target_path, m_s_bitrate, m_v_bitrate, fi.baseName(true),
 		m_size, m_v_padding, m_h_padding, cb, ptr);
-	printf("done !\n");
 }
 
 void CTranscode::RunThumbnail(CFFmpeg_Glue &ffmpeg)
@@ -229,7 +229,6 @@ void CTranscode::RunThumbnail(CFFmpeg_Glue &ffmpeg)
 	QFileInfo fi(m_src);
 	QString target_path = GetAppSettings()->TargetDir().filePath(fi.baseName(true) + ".thm");
 	ffmpeg.RunThumbnail(m_src, target_path, "00:00:00.00");
-	printf("done !\n");
 }
 
 
@@ -303,7 +302,12 @@ bool CJobQueue::Remove(int job_id)
 {
 	for(std::list<CTranscode>::iterator i = m_queue.begin(); i != m_queue.end(); i++) {
 		if ( i->Id() == job_id ) {
-			m_queue.erase(i);
+			if ( i->IsRunning() ) {
+				QMessageBox::critical(qApp->mainWidget(),
+					"Error", "You can not remove running job");
+			} else {
+				m_queue.erase(i);
+			}
 			return true;
 		}
 	}
@@ -317,7 +321,6 @@ int CJobQueue::UpdateTranscodeProgress(void *ptr, int frame)
 	time_t curr_time = time(0);
 	if ( !(--This->m_update_countdown) || (curr_time - This->m_last_update) ) {
 		int progress = (frame * 100) / This->m_total_frames;
-		//printf("frame = %d progress = %d\n", frame, progress);
 		g_main_win->updateProgress(progress, frame);
 		This->m_update_countdown = This->m_update_interval;
 		This->m_last_update = time(0);
@@ -375,12 +378,9 @@ int CAppSettings::GetNewOutputNameIdx(const QDir &trg_dir) const
 	for(int i = 1 ; i < 999999; i++) {
 		QString next_name;
 		next_name.sprintf("M4V%05d.MP4", i);
-		//QFile f(trg_dir.filePath(next_name));
 		QFileInfo fi(trg_dir.filePath(next_name));
 		printf("DEBUG: testing [%s] - ", (const char *)trg_dir.filePath(next_name));
-		//if ( !QFile::exists(trg_dir.filePath(next_name)) ) {
 		if ( !fi.exists() ) {
-		//if ( !f.open(IO_Raw | IO_ReadOnly) ) {
 			printf("not found, id=%d\n", i);
 			return i;
 		}
