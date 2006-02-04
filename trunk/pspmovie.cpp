@@ -23,8 +23,8 @@
 #include <math.h>
 #include <unistd.h>
 
-#include <ffmpeg/avformat.h>
-#include <ffmpeg/avcodec.h>
+#include "ffmpeg/avformat.h"
+#include "ffmpeg/avcodec.h"
 
 #include "pspmovie.h"
 

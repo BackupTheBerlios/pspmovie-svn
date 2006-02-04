@@ -14,6 +14,11 @@ tar xzf pspmovie.tar.gz
 mv pspmovie "pspmovie-${VERSION}"
 /bin/rm pspmovie.tar.gz
 
+echo "Checking out FFMPEG ..."
+cd "pspmovie-${VERSION}"
+cvs -z9 -d:pserver:anonymous@mplayerhq.hu:/cvsroot/ffmpeg co ffmpeg
+cd ..
+
 /bin/cp README TODO COPYING ChangeLog "pspmovie-${VERSION}"
 tar cf - "pspmovie-${VERSION}" | gzip -c > "pspmovie-${VERSION}.tar.gz"
 

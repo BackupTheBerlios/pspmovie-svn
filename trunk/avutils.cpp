@@ -17,8 +17,8 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include <ffmpeg/avformat.h>
-#include <ffmpeg/avcodec.h>
+#include "ffmpeg/avformat.h"
+#include "ffmpeg/avcodec.h"
 
 /*
  * FFMPEG have a "feature" - it can't parse headers of MP4

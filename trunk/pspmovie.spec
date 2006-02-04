@@ -13,6 +13,9 @@ BuildRequires: ffmpeg-devel >= 0.4.9
 BuildRequires: faad2-devel >= 2.0
 BuildRequires: qt-devel >= 3.3.5
 
+Requires: faad2 >= 2.0
+Requires: qt >= 3.3.5
+
 %description
 The pspmovie allows the user to transcode video files into
 format that Sony PSP understands. It can also help to transfer
@@ -26,7 +29,11 @@ device.
 %setup -q
 
 %build
-qmake pspmovie.pro
+cd ffmpeg
+./configure --disable-ffplay --disable-ffserver --disable-v4l --enable-gpl --enable-a52 --enable-faad
+make RPM_OPT_FLAGS="$RPM_OPT_FLAGS"
+cd ..
+qmake pspmovie_static.pro
 make RPM_OPT_FLAGS="$RPM_OPT_FLAGS"
 
 %install
