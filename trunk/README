@@ -1,0 +1,25 @@
+This is pspmovie - encoder and manager for video files on Sony Portable
+Playstation (aka PSP).
+
+* Supported output format
+pspmovie support MP4 format, 320x240 with several bitrate settings
+for video and audio stream.
+Video can be automatically padded and resized to be correctly displayed
+on PSP screen (which is 480x272).
+
+* Movie transfer
+Connected PSP device will be automatically detected
+
+* Build requirements/instructions
+pspmovie links statically to FFMPEG code. Reason for this is bug in
+released versions of ffmpeg, which cause broken headers of MP4 files.
+As a result, PSP will not display title of movie, which is quite
+annoying.
+Build order for tar.gz. versions (releases):
+	1. Go to ffmpeg directory: cd ffmpeg
+	2. Run configure: ./configure --disable-ffplay --disable-ffserver
+	 --disable-v4l --enable-gpl --enable-a52 --enable-faad
+	   --disable-vhook --disable-network
+	3. Build ffmpeg: make
+	4. Go to source directory: cd ..
+	5. Build pspmovie: qmake pspmovie.pro && make

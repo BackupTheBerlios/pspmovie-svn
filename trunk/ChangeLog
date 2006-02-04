@@ -1,0 +1,7 @@
+pspmovie 0.0.1
+	02-02-2006:
+		Initial release. FFMPEG is being linked statically, and cvs version
+		is included in tarball. Reason: official releases can not generate
+		MP4 header properly (not what PSP expect anyway). This has been fixed
+		in cvs, thou.
+
