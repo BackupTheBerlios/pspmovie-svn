@@ -148,6 +148,12 @@
                             <height>150</height>
                         </size>
                     </property>
+                    <property name="maximumSize">
+                        <size>
+                            <width>300</width>
+                            <height>32767</height>
+                        </size>
+                    </property>
                     <property name="title">
                         <string>Sony PSP</string>
                     </property>
