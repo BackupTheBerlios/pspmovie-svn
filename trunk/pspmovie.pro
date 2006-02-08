@@ -1,12 +1,9 @@
 TEMPLATE	= app
 LANGUAGE	= C++
-TARGET      = pspmovie
 
 CONFIG	+= qt debug
 
-unix:LIBS	+= -lhal -lhal-storage \
-	ffmpeg/libavformat/libavformat.a ffmpeg/libavcodec/libavcodec.a ffmpeg/libavutil/libavutil.a \
-	-lxvidcore -lfaac -lfaad -lmp4v2
+unix:LIBS	+= -lhal -lhal-storage ffmpeg/libavformat/libavformat.a ffmpeg/libavcodec/libavcodec.a ffmpeg/libavutil/libavutil.a -lmp4v2 -lfaad -lfaac
 
 unix:INCLUDEPATH	+= . /usr/include/hal /usr/include/dbus-1.0/ /usr/lib/dbus-1.0/include/
 
@@ -51,6 +48,15 @@ IMAGES	= images/stock_calc-cancel.png \
 	images/stock_left.png \
 	images/stock_right.png \
 	images/sonypsp.png
+
+TARGET      = pspmovie
+
+
+
+
+
+
+
 unix {
   UI_DIR = .ui
   MOC_DIR = .moc
