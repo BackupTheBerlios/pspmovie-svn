@@ -228,7 +228,10 @@ void CTranscode::RunThumbnail(CFFmpeg_Glue &ffmpeg)
 {
 	QFileInfo fi(m_src);
 	QString target_path = GetAppSettings()->TargetDir().filePath(fi.baseName(true) + ".thm");
-	ffmpeg.RunThumbnail(m_src, target_path, "00:00:00.00");
+	
+	QString thm_time;
+	thm_time = QString("%1").arg(m_in_info.Sec() / 10);
+	ffmpeg.RunThumbnail(m_src, target_path, thm_time);
 }
 
 
@@ -366,7 +369,7 @@ CAppSettings::CAppSettings()
 		}
 	}
 
-	printf("Tmp dir -> [%s]\n", (const char *)m_tmp_dir_path);
+	//printf("Tmp dir -> [%s]\n", (const char *)m_tmp_dir_path);
 }
 
 CAppSettings::~CAppSettings()
@@ -379,12 +382,12 @@ int CAppSettings::GetNewOutputNameIdx(const QDir &trg_dir) const
 		QString next_name;
 		next_name.sprintf("M4V%05d.MP4", i);
 		QFileInfo fi(trg_dir.filePath(next_name));
-		printf("DEBUG: testing [%s] - ", (const char *)trg_dir.filePath(next_name));
+		//printf("DEBUG: testing [%s] - ", (const char *)trg_dir.filePath(next_name));
 		if ( !fi.exists() ) {
-			printf("not found, id=%d\n", i);
+			//printf("not found, id=%d\n", i);
 			return i;
 		}
-		printf("found\n");
+		//printf("found\n");
 	}
 	return -1;
 }
@@ -408,12 +411,12 @@ CPSPMovie::CPSPMovie(QFileInfo *info) : m_dir(info->dirPath(TRUE))
 		m_thmb_name = info->baseName(true) + ".thm";
 	}
 
-	printf("Test thumbnail at [%s]\n", (const char *)m_dir.filePath(m_thmb_name));
+	//printf("Test thumbnail at [%s]\n", (const char *)m_dir.filePath(m_thmb_name));
 	
 	m_have_thumbnail = QFile::exists(m_dir.filePath(m_thmb_name));
 	m_size = info->size();
-	printf("File [%d] [%s] with thumbnail [%s]\n", m_id, (const char *)m_movie_name,
-	       m_have_thumbnail ? "yes" : "no");
+//	printf("File [%d] [%s] with thumbnail [%s]\n", m_id, (const char *)m_movie_name,
+//	       m_have_thumbnail ? "yes" : "no");
 	m_str_size = CastToXBytes(m_size);
 	
 	if ( m_have_thumbnail ) {
@@ -423,7 +426,7 @@ CPSPMovie::CPSPMovie(QFileInfo *info) : m_dir(info->dirPath(TRUE))
 
 bool CPSPMovie::DoCopy(QWidget *parent, const QString &source, const QString &target)
 {
-	printf("Copying [%s] -> [%s]\n", (const char *)source, (const char *)target);
+	//printf("Copying [%s] -> [%s]\n", (const char *)source, (const char *)target);
 	QFile src(source);
 	QFile dst(target);
 	if ( !src.open(IO_Raw | IO_ReadOnly) ) {
@@ -512,7 +515,7 @@ bool CPSPMovie::Delete()
 
 CPSPMovieLocalList::CPSPMovieLocalList(const QString &dir_path) : m_source_dir(dir_path)
 {
-	printf("Loading list from [%s]\n", (const char *)dir_path);
+	//printf("Loading list from [%s]\n", (const char *)dir_path);
 
 	// on vfat it's shown in lower case !
 	m_source_dir.setNameFilter("*.MP4;*.mp4");
@@ -531,7 +534,7 @@ CPSPMovieLocalList::CPSPMovieLocalList(const QString &dir_path) : m_source_dir(d
 bool CPSPMovieLocalList::Transfer(QWidget *parent, int id, const QString &dest)
 {
 	Q_ASSERT ( m_movie_set.count(id) );
-	printf("DEBUG: will copy file %d\n", id);
+	//printf("DEBUG: will copy file %d\n", id);
 	CPSPMovie &m = m_movie_set[id];
 	return m.TransferTo(parent, dest, -1);
 }
@@ -541,7 +544,7 @@ bool CPSPMovieLocalList::TransferPSP(QWidget *parent, int id, const QString &bas
 	Q_ASSERT ( m_movie_set.count(id) );
 	CPSPMovie &m = m_movie_set[id];
 	
-	printf("DEBUG: copy to [%s]\n", (const char *)base);
+	//printf("DEBUG: copy to [%s]\n", (const char *)base);
 	QDir mount_base(base);
 	QDir mp_root(mount_base.filePath("MP_ROOT"));
 	if ( !mp_root.exists() && !mp_root.mkdir(mp_root.path()) ) {
@@ -554,21 +557,21 @@ bool CPSPMovieLocalList::TransferPSP(QWidget *parent, int id, const QString &bas
 
 	QDir trg_dir_backup(mp_root.filePath("100MNV01_BACK"));
 	if ( trg_dir.exists() ) {
-	  printf("DEBUG: rename [%s] -> [%s]\n", (const char *)trg_dir.path(),
-		 (const char *)trg_dir_backup.path());
+	  //printf("DEBUG: rename [%s] -> [%s]\n", (const char *)trg_dir.path(),
+		// (const char *)trg_dir_backup.path());
 	  if ( !trg_dir.rename(trg_dir.path(), trg_dir_backup.path()) ) {
-	    printf("DEBUG: failed rename\n");
+	    //printf("DEBUG: failed rename\n");
 	  }
 	}
 	if ( !trg_dir.exists() && !trg_dir.mkdir(trg_dir.path()) ) {
 		return false;
 	}
-	printf("DEBUG: transferring [%s] -> [%s]\n", (const char *)m.Name(), (const char *)trg_dir.path());
+	//printf("DEBUG: transferring [%s] -> [%s]\n", (const char *)m.Name(), (const char *)trg_dir.path());
 	if ( !m.TransferTo(parent, trg_dir.path(), free_idx) ) {
-	  printf("DEBUG: transfer failed\n");
+	  //printf("DEBUG: transfer failed\n");
 		return false;
 	}
-	printf("Checking backup dir [%s]\n", (const char *)trg_dir_backup.path());
+	//printf("Checking backup dir [%s]\n", (const char *)trg_dir_backup.path());
 	if ( trg_dir_backup.exists() ) {
 		const QFileInfoList *files = trg_dir_backup.entryInfoList(QDir::Files);
 		if ( files ) {
@@ -577,18 +580,17 @@ bool CPSPMovieLocalList::TransferPSP(QWidget *parent, int id, const QString &bas
 			while ( ( fi = it.current() ) != 0 ) {
 				QString backup_src(fi->filePath());
 				QString backup_dst(trg_dir.filePath(fi->fileName().upper()));
-				//trg_dir.rename(fi->filePath(), trg_dir.filePath(fi->fileName()));
-				printf("DEBUG: moving [%s] -> [%s]\n", (const char *)backup_src, (const char *)backup_dst);
+				//printf("DEBUG: moving [%s] -> [%s]\n", (const char *)backup_src, (const char *)backup_dst);
 				if ( !trg_dir.rename(backup_src, backup_dst) ) {
-					printf("OOps - rename failed\n");
+					//printf("OOps - rename failed\n");
 				}
 				sync();
 				++it;
 			}
 		}
-		printf("Will remove [%s]\n", (const char *)trg_dir_backup.path());
+		//printf("Will remove [%s]\n", (const char *)trg_dir_backup.path());
 		if  ( !trg_dir_backup.rmdir(trg_dir_backup.path()) ) {
-			printf("remove failed\n");
+			//printf("remove failed\n");
 		}
 		sync();
 	}
