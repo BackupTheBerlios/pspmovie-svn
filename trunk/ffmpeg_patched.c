@@ -4091,7 +4091,9 @@ int ffmpeg_main(int argc, char **argv, int(*cb)(void *, int), void *ptr)
 	audio_disable = video_disable = 0;
 	recording_time = 0;
 	start_time = 0;
-	
+	frame_padtop = frame_padbottom = 0;
+	frame_padleft = frame_padright = 0;
+
     /* parse options */
     parse_options(argc, argv, options);
 
