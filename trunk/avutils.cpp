@@ -272,7 +272,8 @@ bool CFFmpeg_Glue::RunTranscode(
 	return true;
 }
 
-bool CFFmpeg_Glue::RunThumbnail(const char *infile, const char *outfile, const char *offset)
+bool CFFmpeg_Glue::RunThumbnail(const char *infile, const char *outfile,
+	const char *offset, const char *size, const char *v_pad)
 {
 	const char *ffmpeg_opts[256];
 	
@@ -280,10 +281,12 @@ bool CFFmpeg_Glue::RunThumbnail(const char *infile, const char *outfile, const c
 	// "must" set
 	ffmpeg_opts[i++] = "ffmpeg"; ffmpeg_opts[i++] = "-y";
 	ffmpeg_opts[i++] = "-i"; ffmpeg_opts[i++] = infile;
-	ffmpeg_opts[i++] = "-s"; ffmpeg_opts[i++] = "160x120";
+	ffmpeg_opts[i++] = "-s"; ffmpeg_opts[i++] = size;
 	ffmpeg_opts[i++] = "-b"; ffmpeg_opts[i++] = "200";
-//	ffmpeg_opts[i++] = "-padtop"; ffmpeg_opts[i++] = "16";
-//	ffmpeg_opts[i++] = "-padbottom"; ffmpeg_opts[i++] = "14";
+	if ( v_pad && strlen(v_pad) ) {
+		ffmpeg_opts[i++] = "-padtop"; ffmpeg_opts[i++] = v_pad;
+		ffmpeg_opts[i++] = "-padbottom"; ffmpeg_opts[i++] = v_pad;
+	}
 	ffmpeg_opts[i++] = "-r"; ffmpeg_opts[i++] = "1";
 	ffmpeg_opts[i++] = "-t"; ffmpeg_opts[i++] = "1";
 	ffmpeg_opts[i++] = "-ss"; ffmpeg_opts[i++] = offset;

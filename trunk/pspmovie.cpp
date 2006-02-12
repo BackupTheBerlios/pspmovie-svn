@@ -192,8 +192,8 @@ CTranscode::CTranscode(QString &src,
 			w = 320;
 			h = m_in_info.H() * 320 / m_in_info.W();
 		}
-		int pad_v = (240 - h) / 2;
-		int pad_h = (320 - w) / 2;
+		int pad_v = ((240 - h) / 2) & 0xfffe;
+		int pad_h = ((320 - w) / 2) & 0xfffe;
 		
 		m_size = QString("%1x%2") .arg(w) . arg(h);
 		if (  pad_v ) {
@@ -201,6 +201,12 @@ CTranscode::CTranscode(QString &src,
 		}
 		if (  pad_h ) {
 			m_h_padding = QString("%1") . arg(pad_h);
+		}
+		// thumbnail aspect
+		if ( ratio < (120.0/160.0) ) {
+			int t_pad_v = ((120 - m_in_info.H() * 160 / m_in_info.W()) / 2) & 0xfffe;
+			m_th_v_padding = QString("%1") . arg(t_pad_v);
+			m_th_size = QString("160x%1") . arg(120 - 2 * t_pad_v);
 		}
 	}
 }
@@ -229,9 +235,13 @@ void CTranscode::RunThumbnail(CFFmpeg_Glue &ffmpeg)
 	QFileInfo fi(m_src);
 	QString target_path = GetAppSettings()->TargetDir().filePath(fi.baseName(true) + ".thm");
 	
+	int thm_off = m_in_info.Sec() / 10;
+	if ( thm_off > 20 ) {
+		thm_off = 20;
+	}
 	QString thm_time;
-	thm_time = QString("%1").arg(m_in_info.Sec() / 10);
-	ffmpeg.RunThumbnail(m_src, target_path, thm_time);
+	thm_time = QString("%1").arg(thm_off);
+	ffmpeg.RunThumbnail(m_src, target_path, thm_time, m_th_size, m_th_v_padding);
 }
 
 

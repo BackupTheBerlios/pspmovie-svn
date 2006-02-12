@@ -82,7 +82,8 @@ class CFFmpeg_Glue {
 		// Call to create thumbnail image.
 		// offset have firmat hh:mm:ss.SS
 		//
-		bool RunThumbnail(const char *infile, const char *outfile, const char *offset);
+		bool RunThumbnail(const char *infile, const char *outfile,
+			const char *offset, const char *size, const char *v_pad);
 };
 
 #endif /*AVUTILS_H_*/

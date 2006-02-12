@@ -37,6 +37,10 @@ class CTranscode {
 		QString m_s_bitrate, m_v_bitrate;
 		QString m_v_padding, m_h_padding;
 		
+		// thumbnail padding/size
+		QString m_th_size;
+		QString m_th_v_padding;
+		
 		// input stream params
 		CAVInfo m_in_info;
 
