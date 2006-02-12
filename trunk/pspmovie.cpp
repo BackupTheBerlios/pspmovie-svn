@@ -318,10 +318,11 @@ bool CJobQueue::Remove(int job_id)
 			if ( i->IsRunning() ) {
 				QMessageBox::critical(qApp->mainWidget(),
 					"Error", "You can not remove running job");
+				return false;
 			} else {
 				m_queue.erase(i);
+				return true;
 			}
-			return true;
 		}
 	}
 	return false;

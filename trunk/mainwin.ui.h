@@ -128,8 +128,9 @@ void MainWin::deleteQueue()
 				 "Please select job you want to remove from queue");
     } else {
 	 bool res = g_job_queue.Remove(i->Id());
-	 Q_ASSERT(res);
-	delete i;
+	 if ( res ) {
+	     delete i;
+	 }
     }
 }
 
