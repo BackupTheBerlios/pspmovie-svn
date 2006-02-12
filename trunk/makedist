@@ -14,12 +14,14 @@ tar xzf pspmovie.tar.gz
 mv pspmovie "pspmovie-${VERSION}"
 /bin/rm pspmovie.tar.gz
 
-echo "Checking out FFMPEG ..."
-cd "pspmovie-${VERSION}"
-cvs -z9 -d:pserver:anonymous@mplayerhq.hu:/cvsroot/ffmpeg co ffmpeg
-cd ..
+#echo "Checking out FFMPEG ..."
+#cd "pspmovie-${VERSION}"
+#cvs -z9 -d:pserver:anonymous@mplayerhq.hu:/cvsroot/ffmpeg co ffmpeg
+#cd ..
+/bin/cp -r ffmpeg-CVS "pspmovie-${VERSION}"/ffmpeg
+/bin/cp README TODO COPYING ChangeLog pspmovie.desktop pspmovie.spec "pspmovie-${VERSION}"
+/bin/cp images/sonypsp.png "pspmovie-${VERSION}"/pspmovie.png
 
-/bin/cp README TODO COPYING ChangeLog "pspmovie-${VERSION}"
 tar cf - "pspmovie-${VERSION}" | gzip -c > "pspmovie-${VERSION}.tar.gz"
 
 if (!(-f "pspmovie-${VERSION}.tar.gz")) then
