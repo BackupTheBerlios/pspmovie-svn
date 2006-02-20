@@ -195,6 +195,13 @@ CTranscode::CTranscode(QString &src,
 		int pad_v = ((240 - h) / 2) & 0xfffe;
 		int pad_h = ((320 - w) / 2) & 0xfffe;
 		
+		if ( (h + 2 * pad_v) != 240 ) {
+			h += 240 - (h + 2 * pad_v);
+		}
+		if ( (w + 2 * pad_h) != 320 ) {
+			w += 320 - (w + 2 * pad_h);
+		}
+
 		m_size = QString("%1x%2") .arg(w) . arg(h);
 		if (  pad_v ) {
 			m_v_padding = QString("%1") . arg(pad_v);
