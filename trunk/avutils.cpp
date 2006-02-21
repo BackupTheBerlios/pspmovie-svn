@@ -273,7 +273,7 @@ bool CFFmpeg_Glue::RunTranscode(
 }
 
 bool CFFmpeg_Glue::RunThumbnail(const char *infile, const char *outfile,
-	const char *offset, const char *size, const char *v_pad)
+	const char *offset, const char *size, const char *v_pad, const char *h_pad)
 {
 	const char *ffmpeg_opts[256];
 	
@@ -286,6 +286,10 @@ bool CFFmpeg_Glue::RunThumbnail(const char *infile, const char *outfile,
 	if ( v_pad && strlen(v_pad) ) {
 		ffmpeg_opts[i++] = "-padtop"; ffmpeg_opts[i++] = v_pad;
 		ffmpeg_opts[i++] = "-padbottom"; ffmpeg_opts[i++] = v_pad;
+	}
+	if ( h_pad && strlen(h_pad) ) {
+		ffmpeg_opts[i++] = "-padleft"; ffmpeg_opts[i++] = h_pad;
+		ffmpeg_opts[i++] = "-padright"; ffmpeg_opts[i++] = h_pad;
 	}
 	ffmpeg_opts[i++] = "-r"; ffmpeg_opts[i++] = "1";
 	ffmpeg_opts[i++] = "-t"; ffmpeg_opts[i++] = "1";

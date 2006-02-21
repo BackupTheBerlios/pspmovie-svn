@@ -39,7 +39,7 @@ class CTranscode {
 		
 		// thumbnail padding/size
 		QString m_th_size;
-		QString m_th_v_padding;
+		QString m_th_v_padding, m_th_h_padding;
 		
 		// input stream params
 		CAVInfo m_in_info;

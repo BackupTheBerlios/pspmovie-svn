@@ -214,6 +214,10 @@ CTranscode::CTranscode(QString &src,
 			int t_pad_v = ((120 - m_in_info.H() * 160 / m_in_info.W()) / 2) & 0xfffe;
 			m_th_v_padding = QString("%1") . arg(t_pad_v);
 			m_th_size = QString("160x%1") . arg(120 - 2 * t_pad_v);
+		} else {
+			int t_pad_h = ((160 - m_in_info.W() * 120 / m_in_info.H()) / 2) & 0xfffe;
+			m_th_h_padding = QString("%1") . arg(t_pad_h);
+			m_th_size = QString("%1x120") . arg(160 - 2 * t_pad_h);
 		}
 	}
 }
@@ -248,7 +252,7 @@ void CTranscode::RunThumbnail(CFFmpeg_Glue &ffmpeg)
 	}
 	QString thm_time;
 	thm_time = QString("%1").arg(thm_off);
-	ffmpeg.RunThumbnail(m_src, target_path, thm_time, m_th_size, m_th_v_padding);
+	ffmpeg.RunThumbnail(m_src, target_path, thm_time, m_th_size, m_th_v_padding, m_th_h_padding);
 }
 
 
