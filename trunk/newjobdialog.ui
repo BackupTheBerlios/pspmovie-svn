@@ -8,8 +8,8 @@
         <rect>
             <x>0</x>
             <y>0</y>
-            <width>577</width>
-            <height>231</height>
+            <width>579</width>
+            <height>399</height>
         </rect>
     </property>
     <property name="sizePolicy">
@@ -67,6 +67,352 @@
             <string>...</string>
         </property>
     </widget>
+    <widget class="QGroupBox">
+        <property name="name">
+            <cstring>groupBox2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>30</x>
+                <y>60</y>
+                <width>200</width>
+                <height>90</height>
+            </rect>
+        </property>
+        <property name="title">
+            <string>Output bitrate</string>
+        </property>
+        <widget class="QComboBox">
+            <item>
+                <property name="text">
+                    <string>768kbps</string>
+                </property>
+            </item>
+            <item>
+                <property name="text">
+                    <string>384kbps</string>
+                </property>
+            </item>
+            <item>
+                <property name="text">
+                    <string>256kbps</string>
+                </property>
+            </item>
+            <property name="name">
+                <cstring>comboBox_TargetVideo</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>91</x>
+                    <y>13</y>
+                    <width>78</width>
+                    <height>27</height>
+                </rect>
+            </property>
+            <property name="minimumSize">
+                <size>
+                    <width>0</width>
+                    <height>25</height>
+                </size>
+            </property>
+        </widget>
+        <widget class="QComboBox">
+            <item>
+                <property name="text">
+                    <string>128kbps</string>
+                </property>
+            </item>
+            <item>
+                <property name="text">
+                    <string>96kbps</string>
+                </property>
+            </item>
+            <item>
+                <property name="text">
+                    <string>64kbps</string>
+                </property>
+            </item>
+            <property name="name">
+                <cstring>comboBox_TargetSound</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>92</x>
+                    <y>53</y>
+                    <width>78</width>
+                    <height>27</height>
+                </rect>
+            </property>
+            <property name="minimumSize">
+                <size>
+                    <width>0</width>
+                    <height>25</height>
+                </size>
+            </property>
+        </widget>
+        <widget class="QLabel">
+            <property name="name">
+                <cstring>textLabel2_2</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>31</x>
+                    <y>13</y>
+                    <width>50</width>
+                    <height>27</height>
+                </rect>
+            </property>
+            <property name="minimumSize">
+                <size>
+                    <width>0</width>
+                    <height>25</height>
+                </size>
+            </property>
+            <property name="text">
+                <string>Video</string>
+            </property>
+        </widget>
+        <widget class="QLabel">
+            <property name="name">
+                <cstring>textLabel2</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>31</x>
+                    <y>53</y>
+                    <width>40</width>
+                    <height>27</height>
+                </rect>
+            </property>
+            <property name="minimumSize">
+                <size>
+                    <width>0</width>
+                    <height>25</height>
+                </size>
+            </property>
+            <property name="text">
+                <string>Audio</string>
+            </property>
+        </widget>
+    </widget>
+    <widget class="QCheckBox">
+        <property name="name">
+            <cstring>checkBox_FixAspect</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>280</x>
+                <y>80</y>
+                <width>143</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Auto fix aspect ratio</string>
+        </property>
+        <property name="checked">
+            <bool>true</bool>
+        </property>
+    </widget>
+    <widget class="QGroupBox">
+        <property name="name">
+            <cstring>groupBox1</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>30</x>
+                <y>170</y>
+                <width>390</width>
+                <height>140</height>
+            </rect>
+        </property>
+        <property name="title">
+            <string>Thumbnail image</string>
+        </property>
+        <widget class="QLabel">
+            <property name="name">
+                <cstring>textLabel2_3</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>230</x>
+                    <y>44</y>
+                    <width>16</width>
+                    <height>20</height>
+                </rect>
+            </property>
+            <property name="text">
+                <string> :</string>
+            </property>
+        </widget>
+        <widget class="QSlider">
+            <property name="name">
+                <cstring>slider_thm_time</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>190</x>
+                    <y>90</y>
+                    <width>190</width>
+                    <height>16</height>
+                </rect>
+            </property>
+            <property name="pageStep">
+                <number>6</number>
+            </property>
+            <property name="tracking">
+                <bool>false</bool>
+            </property>
+            <property name="orientation">
+                <enum>Horizontal</enum>
+            </property>
+            <property name="tickmarks">
+                <enum>Above</enum>
+            </property>
+        </widget>
+        <widget class="QLCDNumber">
+            <property name="name">
+                <cstring>lCDNumber_M</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>248</x>
+                    <y>44</y>
+                    <width>30</width>
+                    <height>23</height>
+                </rect>
+            </property>
+            <property name="numDigits">
+                <number>2</number>
+            </property>
+            <property name="segmentStyle">
+                <enum>Flat</enum>
+            </property>
+        </widget>
+        <widget class="QLCDNumber">
+            <property name="name">
+                <cstring>lCDNumber_H</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>198</x>
+                    <y>44</y>
+                    <width>30</width>
+                    <height>23</height>
+                </rect>
+            </property>
+            <property name="numDigits">
+                <number>2</number>
+            </property>
+            <property name="segmentStyle">
+                <enum>Flat</enum>
+            </property>
+        </widget>
+        <widget class="QLCDNumber">
+            <property name="name">
+                <cstring>lCDNumber_S</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>298</x>
+                    <y>44</y>
+                    <width>30</width>
+                    <height>23</height>
+                </rect>
+            </property>
+            <property name="numDigits">
+                <number>2</number>
+            </property>
+            <property name="segmentStyle">
+                <enum>Flat</enum>
+            </property>
+        </widget>
+        <widget class="QLabel">
+            <property name="name">
+                <cstring>textLabel2_3_2</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>278</x>
+                    <y>44</y>
+                    <width>16</width>
+                    <height>20</height>
+                </rect>
+            </property>
+            <property name="text">
+                <string> :</string>
+            </property>
+        </widget>
+        <widget class="QLabel">
+            <property name="name">
+                <cstring>pixmapLabel_Thumbnail</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>20</x>
+                    <y>30</y>
+                    <width>120</width>
+                    <height>90</height>
+                </rect>
+            </property>
+            <property name="frameShape">
+                <enum>Box</enum>
+            </property>
+            <property name="pixmap">
+                <pixmap>stock_data-undo.png</pixmap>
+            </property>
+            <property name="scaledContents">
+                <bool>true</bool>
+            </property>
+        </widget>
+    </widget>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>buttonOk</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>160</x>
+                <y>340</y>
+                <width>85</width>
+                <height>30</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&amp;OK</string>
+        </property>
+        <property name="accel">
+            <string></string>
+        </property>
+        <property name="autoDefault">
+            <bool>true</bool>
+        </property>
+        <property name="default">
+            <bool>true</bool>
+        </property>
+    </widget>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>buttonCancel</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>301</x>
+                <y>340</y>
+                <width>85</width>
+                <height>30</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&amp;Cancel</string>
+        </property>
+        <property name="accel">
+            <string></string>
+        </property>
+        <property name="autoDefault">
+            <bool>true</bool>
+        </property>
+    </widget>
     <widget class="QLineEdit">
         <property name="name">
             <cstring>lineEdit_File</cstring>
@@ -95,184 +441,6 @@
             <string></string>
         </property>
     </widget>
-    <widget class="QPushButton">
-        <property name="name">
-            <cstring>buttonOk</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>160</x>
-                <y>180</y>
-                <width>85</width>
-                <height>30</height>
-            </rect>
-        </property>
-        <property name="text">
-            <string>&amp;OK</string>
-        </property>
-        <property name="accel">
-            <string></string>
-        </property>
-        <property name="autoDefault">
-            <bool>true</bool>
-        </property>
-        <property name="default">
-            <bool>true</bool>
-        </property>
-    </widget>
-    <widget class="QPushButton">
-        <property name="name">
-            <cstring>buttonCancel</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>301</x>
-                <y>180</y>
-                <width>85</width>
-                <height>30</height>
-            </rect>
-        </property>
-        <property name="text">
-            <string>&amp;Cancel</string>
-        </property>
-        <property name="accel">
-            <string></string>
-        </property>
-        <property name="autoDefault">
-            <bool>true</bool>
-        </property>
-    </widget>
-    <widget class="QLabel">
-        <property name="name">
-            <cstring>textLabel2_2</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>241</x>
-                <y>71</y>
-                <width>74</width>
-                <height>27</height>
-            </rect>
-        </property>
-        <property name="minimumSize">
-            <size>
-                <width>0</width>
-                <height>25</height>
-            </size>
-        </property>
-        <property name="text">
-            <string>Video bitrate</string>
-        </property>
-    </widget>
-    <widget class="QComboBox">
-        <item>
-            <property name="text">
-                <string>128kbps</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>96kbps</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>64kbps</string>
-            </property>
-        </item>
-        <property name="name">
-            <cstring>comboBox_TargetSound</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>105</x>
-                <y>71</y>
-                <width>78</width>
-                <height>27</height>
-            </rect>
-        </property>
-        <property name="minimumSize">
-            <size>
-                <width>0</width>
-                <height>25</height>
-            </size>
-        </property>
-    </widget>
-    <widget class="QLabel">
-        <property name="name">
-            <cstring>textLabel2</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>21</x>
-                <y>71</y>
-                <width>78</width>
-                <height>27</height>
-            </rect>
-        </property>
-        <property name="minimumSize">
-            <size>
-                <width>0</width>
-                <height>25</height>
-            </size>
-        </property>
-        <property name="text">
-            <string>Sound bitrate</string>
-        </property>
-    </widget>
-    <widget class="QComboBox">
-        <item>
-            <property name="text">
-                <string>768kbps</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>384kbps</string>
-            </property>
-        </item>
-        <item>
-            <property name="text">
-                <string>256kbps</string>
-            </property>
-        </item>
-        <property name="name">
-            <cstring>comboBox_TargetVideo</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>321</x>
-                <y>71</y>
-                <width>78</width>
-                <height>27</height>
-            </rect>
-        </property>
-        <property name="minimumSize">
-            <size>
-                <width>0</width>
-                <height>25</height>
-            </size>
-        </property>
-    </widget>
-    <widget class="QCheckBox">
-        <property name="name">
-            <cstring>checkBox_FixAspect</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>30</x>
-                <y>140</y>
-                <width>143</width>
-                <height>20</height>
-            </rect>
-        </property>
-        <property name="text">
-            <string>Auto fix aspect ratio</string>
-        </property>
-        <property name="checked">
-            <bool>true</bool>
-        </property>
-    </widget>
 </widget>
 <connections>
     <connection>
@@ -293,12 +461,32 @@
         <receiver>NewJobDialog</receiver>
         <slot>Browse_clicked()</slot>
     </connection>
+    <connection>
+        <sender>lineEdit_File</sender>
+        <signal>textChanged(const QString&amp;)</signal>
+        <receiver>NewJobDialog</receiver>
+        <slot>lineEdit_File_textChanged(const QString&amp;)</slot>
+    </connection>
+    <connection>
+        <sender>slider_thm_time</sender>
+        <signal>valueChanged(int)</signal>
+        <receiver>NewJobDialog</receiver>
+        <slot>slider_thm_time_valueChanged(int)</slot>
+    </connection>
 </connections>
 <includes>
+    <include location="local" impldecl="in declaration">avutils.h</include>
     <include location="local" impldecl="in implementation">newjobdialog.ui.h</include>
 </includes>
+<variables>
+    <variable>CAVInfo *m_avinfo;</variable>
+</variables>
 <slots>
     <slot>Browse_clicked()</slot>
+    <slot>slider_thm_time_valueChanged( int v )</slot>
+    <slot>lineEdit_File_textChanged( const QString &amp; s )</slot>
+    <slot specifier="non virtual">init()</slot>
+    <slot specifier="non virtual">destroy()</slot>
 </slots>
 <pixmapinproject/>
 <layoutdefaults spacing="6" margin="11"/>

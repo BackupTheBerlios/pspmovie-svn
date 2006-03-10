@@ -16,6 +16,10 @@
 #ifndef AVUTILS_H_
 #define AVUTILS_H_
 
+#include "ffmpeg/avformat.h"
+#include "ffmpeg/avcodec.h"
+
+
 class CAVInfo {
 		bool m_have_vstream;
 		bool m_codec_ok;
@@ -25,6 +29,14 @@ class CAVInfo {
 		float m_fps;
 		int m_frame_count;
 		
+		AVFormatContext *m_fctx;
+		AVStream *m_st;
+		AVCodecContext *m_acctx;
+		AVCodec *m_codec;
+		int m_videoStream;
+		AVFrame *m_pFrame, *m_pFrameRGB;
+		unsigned char *m_img_data;
+		
 		// same size as in libavformat
 		char m_title[512];
 
@@ -32,7 +44,11 @@ class CAVInfo {
 		void ReadMP4(const char *file);
 	public:
 		CAVInfo(const char *file);
-		CAVInfo() { /* for stl */ }
+		CAVInfo()
+		{
+			/* for stl */ 
+		}
+		~CAVInfo();
 		
 		bool HaveVStream() { return m_have_vstream; }
 		bool CodecOk() { return m_codec_ok; }
@@ -44,6 +60,10 @@ class CAVInfo {
 		int H() { return m_height; }
 		
 		int FrameCount() { return m_frame_count; }
+		
+		bool Seek(int secs);
+		bool GetNextFrame();
+		uint8_t *ImageData() { return (uint8_t *)m_img_data; }
 		
 		const char *Title() { return &m_title[0]; }
 };

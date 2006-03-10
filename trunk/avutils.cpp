@@ -17,9 +17,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "ffmpeg/avformat.h"
-#include "ffmpeg/avcodec.h"
-
 /*
  * FFMPEG have a "feature" - it can't parse headers of MP4
  * files properly. Actually, all "atom" parsing thing is
@@ -58,48 +55,54 @@ CAVInfo::CAVInfo(const char *filename)
 	m_have_vstream = false;
 	m_codec_ok = false;
 	m_title[0] = 0;
-
+	m_img_data = 0;
+	m_pFrameRGB = m_pFrame = 0;
+	m_fctx = 0;
+	
 	if ( !filename ) {
 		return;
 	}
 			
-	AVFormatContext *fctx;
-	if ( av_open_input_file(&fctx, filename, 0, 0, 0) != 0 ) {
+	if ( av_open_input_file(&m_fctx, filename, 0, 0, 0) != 0 ) {
 		printf("av_open_input_file - error\n");
 		return;
 	}
-	if( av_find_stream_info(fctx) < 0) {
+	if( av_find_stream_info(m_fctx) < 0) {
 		printf("av_find_stream_info - error\n");
 		return;
 	}
 
 #ifdef AVLIB_TEST
-	dump_format(fctx, 0, filename, false);
+	dump_format(m_fctx, 0, filename, false);
 	printf("Title [%s] comment [%s]\n", fctx->title, fctx->comment);
 #endif
 
- 	m_sec = fctx->duration / AV_TIME_BASE;
-    m_usec = fctx->duration % AV_TIME_BASE;
+ 	m_sec = m_fctx->duration / AV_TIME_BASE;
+    m_usec = m_fctx->duration % AV_TIME_BASE;
     m_width = m_height = 0;
-	int videoStream = -1;
-	for(int i = 0; i < fctx->nb_streams; i++) {
-		if ( fctx->streams[i]->codec->codec_type == CODEC_TYPE_VIDEO) {
-			m_width = fctx->streams[i]->codec->width;
-			m_height = fctx->streams[i]->codec->height;
-	        videoStream = i;
+	m_videoStream = -1;
+	for(int i = 0; i < m_fctx->nb_streams; i++) {
+		if ( m_fctx->streams[i]->codec->codec_type == CODEC_TYPE_VIDEO) {
+			m_width = m_fctx->streams[i]->codec->width;
+			m_height = m_fctx->streams[i]->codec->height;
+	        m_videoStream = i;
 	        m_have_vstream = true;
     	    break;
  		}
 	}
-	if(videoStream == -1) {
+	if(!m_have_vstream) {
     	printf("Didn't find a video stream\n");
     	return ;
 	}
 
 	// Get a pointer to the codec context for the video stream
-	AVStream *st = fctx->streams[videoStream];
-	AVCodecContext *acctx = st->codec;
-	m_fps = 1/av_q2d(st->time_base);
+	m_st = m_fctx->streams[m_videoStream];
+	m_acctx = m_st->codec;
+	m_fps = 1/av_q2d(m_st->time_base);
+	if ( m_fps > 1000 ) {
+		m_fps = av_q2d(m_st->r_frame_rate);
+	}
+	printf("Stream with %f fps\n", m_fps);
 	/*
 	if (st->r_frame_rate.den && st->r_frame_rate.num) {
 		m_fps = av_q2d(st->r_frame_rate);
@@ -108,10 +111,24 @@ CAVInfo::CAVInfo(const char *filename)
 	}
 	*/
 	// Find the decoder for the video stream
-	AVCodec *codec = avcodec_find_decoder(acctx->codec_id);
-	m_codec_ok = codec != 0;
+	m_codec = avcodec_find_decoder(m_acctx->codec_id);
+	if(m_codec && (avcodec_open(m_acctx, m_codec) == 0)) {
+        m_codec_ok = true;
+	} else {
+		return;
+	}
+	m_frame_count = m_st->nb_frames ? m_st->nb_frames : int(m_sec * m_fps);
 	
-	m_frame_count = st->nb_frames ? st->nb_frames : int(m_sec * m_fps);
+    // Allocate an AVFrame structure
+	m_pFrame = avcodec_alloc_frame();
+
+	int numBytes = avpicture_get_size(PIX_FMT_RGBA32, m_acctx->width, m_acctx->height);
+	m_img_data = new uint8_t[numBytes];
+    m_pFrameRGB = avcodec_alloc_frame();
+
+    // Assign appropriate parts of buffer to image planes in pFrameRGB
+    avpicture_fill((AVPicture *)m_pFrameRGB, m_img_data, PIX_FMT_RGBA32,
+		m_acctx->width, m_acctx->height);
 	
 	//
 	// If we have .mp4 file, attempt to read title
@@ -120,6 +137,59 @@ CAVInfo::CAVInfo(const char *filename)
 	if ( !strcmp(ext, ".mp4") || !strcmp(ext, ".MP4") ) {
 		ReadMP4(filename);
 	}
+}
+
+CAVInfo::~CAVInfo()
+{
+	if ( m_fctx ) {
+		av_close_input_file(m_fctx);
+	}
+	if ( m_pFrameRGB ) {
+	    av_free(m_pFrameRGB);
+	}
+
+    if ( m_pFrame ) {
+	    av_free(m_pFrame);
+    }
+    if ( m_img_data ) {
+    	delete [] m_img_data;
+    }
+}
+
+bool CAVInfo::Seek(int secs)
+{
+	int res = av_seek_frame(m_fctx, m_videoStream, (int)(secs * m_fps), 0);
+	return res == 0;
+}
+
+bool CAVInfo::GetNextFrame()
+{
+    AVPacket packet;
+    int frameFinished;
+    
+	while( av_read_frame(m_fctx, &packet) >=0 ) {
+	    // Is this a packet from the video stream?
+	    if(packet.stream_index == m_videoStream) {
+	        // Decode video frame
+	        avcodec_decode_video(m_acctx, m_pFrame, &frameFinished, 
+	            packet.data, packet.size);
+	
+	        // Did we get a video frame?
+	        if(frameFinished) {
+	            // Convert the image from its native format to RGB
+	            img_convert((AVPicture *)m_pFrameRGB, PIX_FMT_RGBA32, 
+	                (AVPicture*)m_pFrame, m_acctx->pix_fmt, m_acctx->width, 
+	                m_acctx->height);
+				return true;
+	            // Process the video frame (save to disk etc.)
+	            //DoSomethingWithTheImage(pFrameRGB);
+	        }
+	    }
+	
+	    // Free the packet that was allocated by av_read_frame
+	    av_free_packet(&packet);
+	}
+	return false;
 }
 
 uint32_t read_be32(uint8_t *data)

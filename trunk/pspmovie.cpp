@@ -183,14 +183,23 @@ CTranscode::CTranscode(QString &src,
                     .arg( h ) .arg( m ) .arg( s ) .arg( ms );
 
 	if ( fix_aspect ) {
+		/*
+		 * PSP have screen size 480 x 272 pixel, and can
+		 * resize movie to fit the screen discarding aspect ratio
+		 */
 		int h, w;
 		float ratio = (float)m_in_info.H() / (float)m_in_info.W();
 		if ( ratio >= (9.0/16.0) ) {
+			// adding vertical strips. In this case movie is being optimized
+			// for scaled view mode (aspect ratio is maintainted)
 			h = 240;
 			w = m_in_info.W() * 240 / m_in_info.H();
 		} else {
+			// adding horizontal strips. In this case movie is being optimized
+			// for full-screen view mode (aspect ratio is discarded)
+			// h = H/W x 480 x (240/270)
 			w = 320;
-			h = m_in_info.H() * 320 / m_in_info.W();
+			h = m_in_info.H() * 160 * 8 / m_in_info.W() / 3;
 		}
 		int pad_v = ((240 - h) / 2) & 0xfffe;
 		int pad_h = ((320 - w) / 2) & 0xfffe;
