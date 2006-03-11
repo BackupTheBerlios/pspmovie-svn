@@ -133,15 +133,19 @@ void CJobControlImp::ProcessDone()
 //
 int CTranscode::m_curr_id = 1001;
 
-CTranscode::CTranscode(QString &src,
-			QString &s_bitrate, QString &v_bitrate, bool fix_aspect) : m_in_info(src)
+CTranscode::CTranscode(QString &src, uint32_t thumbnail_time,
+			QString &s_bitrate, QString &v_bitrate, bool fix_aspect)/* : m_in_info(src)*/
 {
-	if ( !IsOK() ) {
+	CAVInfo m_in_info(src);
+	m_input_ok = m_in_info.HaveVStream() && m_in_info.CodecOk();
+	m_frame_count = m_in_info.FrameCount();
+	if ( !m_input_ok ) {
 		return;
 	}
 	m_being_run = false;
 	m_src = src;
-
+	m_thumbnail_time = thumbnail_time;
+	
 	// some tell, that other resolution is possible. Never find it to
 	// be true	
 	m_size = "320x240";
@@ -233,12 +237,14 @@ CTranscode::CTranscode(QString &src,
 
 bool CTranscode::IsOK()
 {
-	return m_in_info.HaveVStream() && m_in_info.CodecOk();
+	//return m_in_info.HaveVStream() && m_in_info.CodecOk();
+	return m_input_ok;
 }
 
 int CTranscode::TotalFrames()
 {
-	return m_in_info.FrameCount();
+	//return m_in_info.FrameCount();
+	return m_frame_count;
 }
 
 void CTranscode::RunTranscode(CFFmpeg_Glue &ffmpeg, int (cb)(void *, int), void *ptr)
@@ -254,14 +260,21 @@ void CTranscode::RunThumbnail(CFFmpeg_Glue &ffmpeg)
 {
 	QFileInfo fi(m_src);
 	QString target_path = GetAppSettings()->TargetDir().filePath(fi.baseName(true) + ".thm");
-	
-	int thm_off = m_in_info.Sec() / 10;
-	if ( thm_off > 20 ) {
-		thm_off = 20;
-	}
-	QString thm_time;
-	thm_time = QString("%1").arg(thm_off);
-	ffmpeg.RunThumbnail(m_src, target_path, thm_time, m_th_size, m_th_v_padding, m_th_h_padding);
+
+	CAVInfo m_in_info(m_src);
+	m_in_info.Seek(m_thumbnail_time);
+	m_in_info.GetNextFrame();
+//	
+//	int thm_off = m_in_info.Sec() / 10;
+//	if ( thm_off > 20 ) {
+//		thm_off = 20;
+//	}
+//	QString thm_time;
+//	thm_time = QString("%1").arg(m_thumbnail_time);
+//	ffmpeg.RunThumbnail(m_src, target_path, thm_time, m_th_size, m_th_v_padding, m_th_h_padding);
+	QImage img(m_in_info.ImageData(), m_in_info.W(), m_in_info.H(),
+		32, 0, 0, QImage::LittleEndian);
+	img.scale(160, 120).save(target_path, "JPEG");
 }
 
 
