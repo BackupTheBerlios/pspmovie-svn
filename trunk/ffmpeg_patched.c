@@ -2075,208 +2075,6 @@ static int av_encode(AVFormatContext **output_files,
     goto fail1;
 }
 
-#if 0
-int file_read(const char *filename)
-{
-    URLContext *h;
-    unsigned char buffer[1024];
-    int len, i;
-
-    if (url_open(&h, filename, O_RDONLY) < 0) {
-        printf("could not open '%s'\n", filename);
-        return -1;
-    }
-    for(;;) {
-        len = url_read(h, buffer, sizeof(buffer));
-        if (len <= 0)
-            break;
-        for(i=0;i<len;i++) putchar(buffer[i]);
-    }
-    url_close(h);
-    return 0;
-}
-#endif
-
-static void opt_image_format(const char *arg)
-{
-    AVImageFormat *f;
-
-    for(f = first_image_format; f != NULL; f = f->next) {
-        if (!strcmp(arg, f->name))
-            break;
-    }
-    if (!f) {
-        fprintf(stderr, "Unknown image format: '%s'\n", arg);
-        exit(1);
-    }
-    image_format = f;
-}
-
-static void opt_format(const char *arg)
-{
-    /* compatibility stuff for pgmyuv */
-    if (!strcmp(arg, "pgmyuv")) {
-        pgmyuv_compatibility_hack=1;
-//        opt_image_format(arg);
-        arg = "image2";
-    }
-
-    file_iformat = av_find_input_format(arg);
-    file_oformat = guess_format(arg, NULL, NULL);
-    if (!file_iformat && !file_oformat) {
-        fprintf(stderr, "Unknown input or output format: %s\n", arg);
-        exit(1);
-    }
-}
-
-static void opt_video_bitrate(const char *arg)
-{
-    video_bit_rate = atoi(arg) * 1000;
-}
-
-static void opt_video_bitrate_tolerance(const char *arg)
-{
-    video_bit_rate_tolerance = atoi(arg) * 1000;
-}
-
-static void opt_video_bitrate_max(const char *arg)
-{
-    video_rc_max_rate = atoi(arg) * 1000;
-}
-
-static void opt_video_bitrate_min(const char *arg)
-{
-    video_rc_min_rate = atoi(arg) * 1000;
-}
-
-static void opt_video_buffer_size(const char *arg)
-{
-    video_rc_buffer_size = atoi(arg) * 8*1024;
-}
-
-static void opt_video_rc_eq(char *arg)
-{
-    video_rc_eq = arg;
-}
-
-static void opt_video_rc_override_string(char *arg)
-{
-    video_rc_override_string = arg;
-}
-
-
-static void opt_workaround_bugs(const char *arg)
-{
-    workaround_bugs = atoi(arg);
-}
-
-static void opt_me_threshold(const char *arg)
-{
-    me_threshold = atoi(arg);
-}
-
-static void opt_mb_threshold(const char *arg)
-{
-    mb_threshold = atoi(arg);
-}
-
-static void opt_verbose(const char *arg)
-{
-    verbose = atoi(arg);
-    av_log_set_level(atoi(arg));
-}
-
-static void opt_frame_rate(const char *arg)
-{
-    if (parse_frame_rate(&frame_rate, &frame_rate_base, arg) < 0) {
-        fprintf(stderr, "Incorrect frame rate\n");
-        exit(1);
-    }
-}
-
-static void opt_frame_crop_top(const char *arg)
-{
-    frame_topBand = atoi(arg);
-    if (frame_topBand < 0) {
-        fprintf(stderr, "Incorrect top crop size\n");
-        exit(1);
-    }
-    if ((frame_topBand % 2) != 0) {
-        fprintf(stderr, "Top crop size must be a multiple of 2\n");
-        exit(1);
-    }
-    if ((frame_topBand) >= frame_height){
-        fprintf(stderr, "Vertical crop dimensions are outside the range of the original image.\nRemember to crop first and scale second.\n");
-        exit(1);
-    }
-    frame_height -= frame_topBand;
-}
-
-static void opt_frame_crop_bottom(const char *arg)
-{
-    frame_bottomBand = atoi(arg);
-    if (frame_bottomBand < 0) {
-        fprintf(stderr, "Incorrect bottom crop size\n");
-        exit(1);
-    }
-    if ((frame_bottomBand % 2) != 0) {
-        fprintf(stderr, "Bottom crop size must be a multiple of 2\n");
-        exit(1);
-    }
-    if ((frame_bottomBand) >= frame_height){
-        fprintf(stderr, "Vertical crop dimensions are outside the range of the original image.\nRemember to crop first and scale second.\n");
-        exit(1);
-    }
-    frame_height -= frame_bottomBand;
-}
-
-static void opt_frame_crop_left(const char *arg)
-{
-    frame_leftBand = atoi(arg);
-    if (frame_leftBand < 0) {
-        fprintf(stderr, "Incorrect left crop size\n");
-        exit(1);
-    }
-    if ((frame_leftBand % 2) != 0) {
-        fprintf(stderr, "Left crop size must be a multiple of 2\n");
-        exit(1);
-    }
-    if ((frame_leftBand) >= frame_width){
-        fprintf(stderr, "Horizontal crop dimensions are outside the range of the original image.\nRemember to crop first and scale second.\n");
-        exit(1);
-    }
-    frame_width -= frame_leftBand;
-}
-
-static void opt_frame_crop_right(const char *arg)
-{
-    frame_rightBand = atoi(arg);
-    if (frame_rightBand < 0) {
-        fprintf(stderr, "Incorrect right crop size\n");
-        exit(1);
-    }
-    if ((frame_rightBand % 2) != 0) {
-        fprintf(stderr, "Right crop size must be a multiple of 2\n");
-        exit(1);
-    }
-    if ((frame_rightBand) >= frame_width){
-        fprintf(stderr, "Horizontal crop dimensions are outside the range of the original image.\nRemember to crop first and scale second.\n");
-        exit(1);
-    }
-    frame_width -= frame_rightBand;
-}
-
-static void opt_frame_size(const char *arg)
-{
-    if (parse_image_size(&frame_width, &frame_height, arg) < 0) {
-        fprintf(stderr, "Incorrect frame size\n");
-        exit(1);
-    }
-    if ((frame_width % 2) != 0 || (frame_height % 2) != 0) {
-        fprintf(stderr, "Frame size must be a multiple of 2\n");
-        exit(1);
-    }
-}
 
 
 #define SCALEBITS 10
@@ -2295,490 +2093,6 @@ static void opt_frame_size(const char *arg)
 (((FIX(0.50000) * r1 - FIX(0.41869) * g1 -           \
    FIX(0.08131) * b1 + (ONE_HALF << shift) - 1) >> (SCALEBITS + shift)) + 128)
 
-static void opt_pad_color(const char *arg) {
-    /* Input is expected to be six hex digits similar to
-       how colors are expressed in html tags (but without the #) */
-    int rgb = strtol(arg, NULL, 16);
-    int r,g,b;
-
-    r = (rgb >> 16);
-    g = ((rgb >> 8) & 255);
-    b = (rgb & 255);
-
-    padcolor[0] = RGB_TO_Y(r,g,b);
-    padcolor[1] = RGB_TO_U(r,g,b,0);
-    padcolor[2] = RGB_TO_V(r,g,b,0);
-}
-
-static void opt_frame_pad_top(const char *arg)
-{
-    frame_padtop = atoi(arg);
-    if (frame_padtop < 0) {
-        fprintf(stderr, "Incorrect top pad size\n");
-        exit(1);
-    }
-    if ((frame_padtop % 2) != 0) {
-        fprintf(stderr, "Top pad size must be a multiple of 2\n");
-        exit(1);
-    }
-}
-
-static void opt_frame_pad_bottom(const char *arg)
-{
-    frame_padbottom = atoi(arg);
-    if (frame_padbottom < 0) {
-        fprintf(stderr, "Incorrect bottom pad size\n");
-        exit(1);
-    }
-    if ((frame_padbottom % 2) != 0) {
-        fprintf(stderr, "Bottom pad size must be a multiple of 2\n");
-        exit(1);
-    }
-}
-
-
-static void opt_frame_pad_left(const char *arg)
-{
-    frame_padleft = atoi(arg);
-    if (frame_padleft < 0) {
-        fprintf(stderr, "Incorrect left pad size\n");
-        exit(1);
-    }
-    if ((frame_padleft % 2) != 0) {
-        fprintf(stderr, "Left pad size must be a multiple of 2\n");
-        exit(1);
-    }
-}
-
-
-static void opt_frame_pad_right(const char *arg)
-{
-    frame_padright = atoi(arg);
-    if (frame_padright < 0) {
-        fprintf(stderr, "Incorrect right pad size\n");
-        exit(1);
-    }
-    if ((frame_padright % 2) != 0) {
-        fprintf(stderr, "Right pad size must be a multiple of 2\n");
-        exit(1);
-    }
-}
-
-
-static void opt_frame_pix_fmt(const char *arg)
-{
-    frame_pix_fmt = avcodec_get_pix_fmt(arg);
-}
-
-static void opt_frame_aspect_ratio(const char *arg)
-{
-    int x = 0, y = 0;
-    double ar = 0;
-    const char *p;
-
-    p = strchr(arg, ':');
-    if (p) {
-        x = strtol(arg, (char **)&arg, 10);
-        if (arg == p)
-            y = strtol(arg+1, (char **)&arg, 10);
-        if (x > 0 && y > 0)
-            ar = (double)x / (double)y;
-    } else
-        ar = strtod(arg, (char **)&arg);
-
-    if (!ar) {
-        fprintf(stderr, "Incorrect aspect ratio specification.\n");
-        exit(1);
-    }
-    frame_aspect_ratio = ar;
-}
-
-static void opt_gop_size(const char *arg)
-{
-    gop_size = atoi(arg);
-}
-
-static void opt_b_frames(const char *arg)
-{
-    b_frames = atoi(arg);
-    if (b_frames > FF_MAX_B_FRAMES) {
-        fprintf(stderr, "\nCannot have more than %d B frames, increase FF_MAX_B_FRAMES.\n", FF_MAX_B_FRAMES);
-        exit(1);
-    } else if (b_frames < 1) {
-        fprintf(stderr, "\nNumber of B frames must be higher than 0\n");
-        exit(1);
-    }
-}
-
-static void opt_pre_me(const char *arg)
-{
-    pre_me = atoi(arg);
-}
-
-static void opt_qscale(const char *arg)
-{
-    video_qscale = atof(arg);
-    if (video_qscale < 0.01 ||
-        video_qscale > 255) {
-        fprintf(stderr, "qscale must be >= 0.01 and <= 255\n");
-        exit(1);
-    }
-}
-
-static void opt_qsquish(const char *arg)
-{
-    video_qsquish = atof(arg);
-    if (video_qsquish < 0.0 ||
-        video_qsquish > 99.0) {
-        fprintf(stderr, "qsquish must be >= 0.0 and <= 99.0\n");
-        exit(1);
-    }
-}
-
-static void opt_lmax(const char *arg)
-{
-    video_lmax = atof(arg)*FF_QP2LAMBDA;
-}
-
-static void opt_lmin(const char *arg)
-{
-    video_lmin = atof(arg)*FF_QP2LAMBDA;
-}
-
-static void opt_qmin(const char *arg)
-{
-    video_qmin = atoi(arg);
-    if (video_qmin < 1 ||
-        video_qmin > 51) {
-        fprintf(stderr, "qmin must be >= 1 and <= 51\n");
-        exit(1);
-    }
-}
-
-static void opt_qmax(const char *arg)
-{
-    video_qmax = atoi(arg);
-    if (video_qmax < 1 ||
-        video_qmax > 51) {
-        fprintf(stderr, "qmax must be >= 1 and <= 51\n");
-        exit(1);
-    }
-}
-
-static void opt_mb_lmin(const char *arg)
-{
-    video_mb_lmin = atof(arg)*FF_QP2LAMBDA;
-    if (video_mb_lmin < 1 ||
-        video_mb_lmin > FF_LAMBDA_MAX) {
-        fprintf(stderr, "mblmin must be >= 1 and <= %d\n", FF_LAMBDA_MAX / FF_QP2LAMBDA);
-        exit(1);
-    }
-}
-
-static void opt_mb_lmax(const char *arg)
-{
-    video_mb_lmax = atof(arg)*FF_QP2LAMBDA;
-    if (video_mb_lmax < 1 ||
-        video_mb_lmax > FF_LAMBDA_MAX) {
-        fprintf(stderr, "mblmax must be >= 1 and <= %d\n", FF_LAMBDA_MAX / FF_QP2LAMBDA);
-        exit(1);
-    }
-}
-
-static void opt_qdiff(const char *arg)
-{
-    video_qdiff = atoi(arg);
-    if (video_qdiff < 0 ||
-        video_qdiff > 31) {
-        fprintf(stderr, "qdiff must be >= 1 and <= 31\n");
-        exit(1);
-    }
-}
-
-static void opt_qblur(const char *arg)
-{
-    video_qblur = atof(arg);
-}
-
-static void opt_qcomp(const char *arg)
-{
-    video_qcomp = atof(arg);
-}
-
-static void opt_rc_initial_cplx(const char *arg)
-{
-    video_rc_initial_cplx = atof(arg);
-}
-static void opt_b_qfactor(const char *arg)
-{
-    video_b_qfactor = atof(arg);
-}
-static void opt_i_qfactor(const char *arg)
-{
-    video_i_qfactor = atof(arg);
-}
-static void opt_b_qoffset(const char *arg)
-{
-    video_b_qoffset = atof(arg);
-}
-static void opt_i_qoffset(const char *arg)
-{
-    video_i_qoffset = atof(arg);
-}
-
-static void opt_ibias(const char *arg)
-{
-    video_intra_quant_bias = atoi(arg);
-}
-static void opt_pbias(const char *arg)
-{
-    video_inter_quant_bias = atoi(arg);
-}
-
-static void opt_packet_size(const char *arg)
-{
-    packet_size= atoi(arg);
-}
-
-static void opt_error_rate(const char *arg)
-{
-    error_rate= atoi(arg);
-}
-
-static void opt_strict(const char *arg)
-{
-    strict= atoi(arg);
-}
-
-static void opt_top_field_first(const char *arg)
-{
-    top_field_first= atoi(arg);
-}
-
-static void opt_sc_threshold(const char *arg)
-{
-    sc_threshold= atoi(arg);
-}
-
-static void opt_me_range(const char *arg)
-{
-    me_range = atoi(arg);
-}
-
-static void opt_thread_count(const char *arg)
-{
-    thread_count= atoi(arg);
-#if !defined(HAVE_THREADS)
-    if (verbose >= 0)
-        fprintf(stderr, "Warning: not compiled with thread support, using thread emulation\n");
-#endif
-}
-
-static void opt_audio_bitrate(const char *arg)
-{
-    audio_bit_rate = atoi(arg) * 1000;
-}
-
-static void opt_audio_rate(const char *arg)
-{
-    audio_sample_rate = atoi(arg);
-}
-
-static void opt_audio_channels(const char *arg)
-{
-    audio_channels = atoi(arg);
-}
-
-static void opt_video_device(const char *arg)
-{
-    video_device = av_strdup(arg);
-}
-
-static void opt_grab_device(const char *arg)
-{
-    grab_device = av_strdup(arg);
-}
-
-static void opt_video_channel(const char *arg)
-{
-    video_channel = strtol(arg, NULL, 0);
-}
-
-static void opt_video_standard(const char *arg)
-{
-    video_standard = av_strdup(arg);
-}
-
-static void opt_audio_device(const char *arg)
-{
-    audio_device = av_strdup(arg);
-}
-
-static void opt_codec(int *pstream_copy, int *pcodec_id,
-                      int codec_type, const char *arg)
-{
-    AVCodec *p;
-
-    if (!strcmp(arg, "copy")) {
-        *pstream_copy = 1;
-    } else {
-        p = first_avcodec;
-        while (p) {
-            if (!strcmp(p->name, arg) && p->type == codec_type)
-                break;
-            p = p->next;
-        }
-        if (p == NULL) {
-            fprintf(stderr, "Unknown codec '%s'\n", arg);
-            exit(1);
-        } else {
-            *pcodec_id = p->id;
-        }
-    }
-}
-
-static void opt_audio_codec(const char *arg)
-{
-    opt_codec(&audio_stream_copy, &audio_codec_id, CODEC_TYPE_AUDIO, arg);
-}
-
-static void opt_audio_tag(const char *arg)
-{
-    char *tail;
-    audio_codec_tag= strtol(arg, &tail, 0);
-
-    if(!tail || *tail)
-        audio_codec_tag= arg[0] + (arg[1]<<8) + (arg[2]<<16) + (arg[3]<<24);
-}
-
-static void opt_video_tag(const char *arg)
-{
-    char *tail;
-    video_codec_tag= strtol(arg, &tail, 0);
-
-    if(!tail || *tail)
-        video_codec_tag= arg[0] + (arg[1]<<8) + (arg[2]<<16) + (arg[3]<<24);
-}
-
-static void add_frame_hooker(const char *arg)
-{
-    int argc = 0;
-    char *argv[64];
-    int i;
-    char *args = av_strdup(arg);
-
-    using_vhook = 1;
-
-    argv[0] = strtok(args, " ");
-    while (argc < 62 && (argv[++argc] = strtok(NULL, " "))) {
-    }
-
-    i = frame_hook_add(argc, argv);
-
-    if (i != 0) {
-        fprintf(stderr, "Failed to add video hook function: %s\n", arg);
-        exit(1);
-    }
-}
-
-const char *motion_str[] = {
-    "zero",
-    "full",
-    "log",
-    "phods",
-    "epzs",
-    "x1",
-    "hex",
-    "umh",
-    "iter",
-    NULL,
-};
-
-static void opt_motion_estimation(const char *arg)
-{
-    const char **p;
-    p = motion_str;
-    for(;;) {
-        if (!*p) {
-            fprintf(stderr, "Unknown motion estimation method '%s'\n", arg);
-            exit(1);
-        }
-        if (!strcmp(*p, arg))
-            break;
-        p++;
-    }
-    me_method = (p - motion_str) + 1;
-}
-
-static void opt_video_codec(const char *arg)
-{
-    opt_codec(&video_stream_copy, &video_codec_id, CODEC_TYPE_VIDEO, arg);
-}
-
-static void opt_subtitle_codec(const char *arg)
-{
-    opt_codec(&subtitle_stream_copy, &subtitle_codec_id, CODEC_TYPE_SUBTITLE, arg);
-}
-
-static void opt_map(const char *arg)
-{
-    AVStreamMap *m;
-    const char *p;
-
-    p = arg;
-    m = &stream_maps[nb_stream_maps++];
-
-    m->file_index = strtol(arg, (char **)&p, 0);
-    if (*p)
-        p++;
-
-    m->stream_index = strtol(p, (char **)&p, 0);
-    if (*p) {
-        p++;
-        m->sync_file_index = strtol(p, (char **)&p, 0);
-        if (*p)
-            p++;
-        m->sync_stream_index = strtol(p, (char **)&p, 0);
-    } else {
-        m->sync_file_index = m->file_index;
-        m->sync_stream_index = m->stream_index;
-    }
-}
-
-static void opt_map_meta_data(const char *arg)
-{
-    AVMetaDataMap *m;
-    const char *p;
-
-    p = arg;
-    m = &meta_data_maps[nb_meta_data_maps++];
-
-    m->out_file = strtol(arg, (char **)&p, 0);
-    if (*p)
-        p++;
-
-    m->in_file = strtol(p, (char **)&p, 0);
-}
-
-static void opt_recording_time(const char *arg)
-{
-    recording_time = parse_date(arg, 1);
-}
-
-static void opt_start_time(const char *arg)
-{
-    start_time = parse_date(arg, 1);
-}
-
-static void opt_rec_timestamp(const char *arg)
-{
-    rec_timestamp = parse_date(arg, 0) / 1000000;
-}
-
-static void opt_input_ts_offset(const char *arg)
-{
-    input_ts_offset = parse_date(arg, 1);
-}
 
 static void opt_input_file(const char *filename)
 {
@@ -3240,70 +2554,6 @@ static void new_audio_stream(AVFormatContext *oc)
     audio_stream_copy = 0;
 }
 
-static void opt_new_subtitle_stream(void)
-{
-    AVFormatContext *oc;
-    AVStream *st;
-    AVCodecContext *subtitle_enc;
-    int i;
-
-    if (nb_output_files <= 0) {
-        fprintf(stderr, "At least one output file must be specified\n");
-        exit(1);
-    }
-    oc = output_files[nb_output_files - 1];
-
-    st = av_new_stream(oc, oc->nb_streams);
-    if (!st) {
-        fprintf(stderr, "Could not alloc stream\n");
-        exit(1);
-    }
-
-    subtitle_enc = st->codec;
-    subtitle_enc->codec_type = CODEC_TYPE_SUBTITLE;
-    if (subtitle_stream_copy) {
-        st->stream_copy = 1;
-    } else {
-        for(i=0; i<opt_name_count; i++){
-             AVOption *opt;
-             double d= av_get_double(avctx_opts, opt_names[i], &opt);
-             if(d==d && (opt->flags&AV_OPT_FLAG_SUBTITLE_PARAM) && (opt->flags&AV_OPT_FLAG_ENCODING_PARAM))
-                 av_set_double(subtitle_enc, opt_names[i], d);
-        }
-        subtitle_enc->codec_id = subtitle_codec_id;
-    }
-
-    if (subtitle_language) {
-        pstrcpy(st->language, sizeof(st->language), subtitle_language);
-        av_free(subtitle_language);
-        subtitle_language = NULL;
-    }
-
-    subtitle_codec_id = CODEC_ID_NONE;
-    subtitle_stream_copy = 0;
-}
-
-static void opt_new_audio_stream(void)
-{
-    AVFormatContext *oc;
-    if (nb_output_files <= 0) {
-        fprintf(stderr, "At least one output file must be specified\n");
-        exit(1);
-    }
-    oc = output_files[nb_output_files - 1];
-    new_audio_stream(oc);
-}
-
-static void opt_new_video_stream(void)
-{
-    AVFormatContext *oc;
-    if (nb_output_files <= 0) {
-        fprintf(stderr, "At least one output file must be specified\n");
-        exit(1);
-    }
-    oc = output_files[nb_output_files - 1];
-    new_video_stream(oc);
-}
 
 static void opt_output_file(const char *filename)
 {
@@ -3537,18 +2787,6 @@ static void prepare_grab(void)
     }
 }
 
-/* same option as mencoder */
-static void opt_pass(const char *pass_str)
-{
-    int pass;
-    pass = atoi(pass_str);
-    if (pass != 1 && pass != 2) {
-        fprintf(stderr, "pass number can be only 1 or 2\n");
-        exit(1);
-    }
-    do_pass = pass;
-}
-
 #if defined(CONFIG_WIN32) || defined(CONFIG_OS2)
 static int64_t getutime(void)
 {
@@ -3566,491 +2804,160 @@ static int64_t getutime(void)
 
 extern int ffm_nopts;
 
-static void show_formats(void)
-{
-    AVInputFormat *ifmt;
-    AVOutputFormat *ofmt;
-    AVImageFormat *image_fmt;
-    URLProtocol *up;
-    AVCodec *p, *p2;
-    const char **pp, *last_name;
-
-    printf("File formats:\n");
-    last_name= "000";
-    for(;;){
-        int decode=0;
-        int encode=0;
-        const char *name=NULL;
-        const char *long_name=NULL;
-
-        for(ofmt = first_oformat; ofmt != NULL; ofmt = ofmt->next) {
-            if((name == NULL || strcmp(ofmt->name, name)<0) &&
-                strcmp(ofmt->name, last_name)>0){
-                name= ofmt->name;
-                long_name= ofmt->long_name;
-                encode=1;
-            }
-        }
-        for(ifmt = first_iformat; ifmt != NULL; ifmt = ifmt->next) {
-            if((name == NULL || strcmp(ifmt->name, name)<0) &&
-                strcmp(ifmt->name, last_name)>0){
-                name= ifmt->name;
-                long_name= ifmt->long_name;
-                encode=0;
-            }
-            if(name && strcmp(ifmt->name, name)==0)
-                decode=1;
-        }
-        if(name==NULL)
-            break;
-        last_name= name;
-
-        printf(
-            " %s%s %-15s %s\n",
-            decode ? "D":" ",
-            encode ? "E":" ",
-            name,
-            long_name ? long_name:" ");
-    }
-    printf("\n");
-
-    printf("Image formats (filename extensions, if any, follow):\n");
-    for(image_fmt = first_image_format; image_fmt != NULL;
-        image_fmt = image_fmt->next) {
-        printf(
-            " %s%s %-6s %s\n",
-            image_fmt->img_read  ? "D":" ",
-            image_fmt->img_write ? "E":" ",
-            image_fmt->name,
-            image_fmt->extensions ? image_fmt->extensions:" ");
-    }
-    printf("\n");
-
-    printf("Codecs:\n");
-    last_name= "000";
-    for(;;){
-        int decode=0;
-        int encode=0;
-        int cap=0;
-        const char *type_str;
-
-        p2=NULL;
-        for(p = first_avcodec; p != NULL; p = p->next) {
-            if((p2==NULL || strcmp(p->name, p2->name)<0) &&
-                strcmp(p->name, last_name)>0){
-                p2= p;
-                decode= encode= cap=0;
-            }
-            if(p2 && strcmp(p->name, p2->name)==0){
-                if(p->decode) decode=1;
-                if(p->encode) encode=1;
-                cap |= p->capabilities;
-            }
-        }
-        if(p2==NULL)
-            break;
-        last_name= p2->name;
-
-        switch(p2->type) {
-        case CODEC_TYPE_VIDEO:
-            type_str = "V";
-            break;
-        case CODEC_TYPE_AUDIO:
-            type_str = "A";
-            break;
-        case CODEC_TYPE_SUBTITLE:
-            type_str = "S";
-            break;
-        default:
-            type_str = "?";
-            break;
-        }
-        printf(
-            " %s%s%s%s%s%s %s",
-            decode ? "D": (/*p2->decoder ? "d":*/" "),
-            encode ? "E":" ",
-            type_str,
-            cap & CODEC_CAP_DRAW_HORIZ_BAND ? "S":" ",
-            cap & CODEC_CAP_DR1 ? "D":" ",
-            cap & CODEC_CAP_TRUNCATED ? "T":" ",
-            p2->name);
-       /* if(p2->decoder && decode==0)
-            printf(" use %s for decoding", p2->decoder->name);*/
-        printf("\n");
-    }
-    printf("\n");
-
-    printf("Supported file protocols:\n");
-    for(up = first_protocol; up != NULL; up = up->next)
-        printf(" %s:", up->name);
-    printf("\n");
-
-    printf("Frame size, frame rate abbreviations:\n ntsc pal qntsc qpal sntsc spal film ntsc-film sqcif qcif cif 4cif\n");
-    printf("Motion estimation methods:\n");
-    pp = motion_str;
-    while (*pp) {
-        printf(" %s", *pp);
-        if ((pp - motion_str + 1) == ME_ZERO)
-            printf("(fastest)");
-        else if ((pp - motion_str + 1) == ME_FULL)
-            printf("(slowest)");
-        else if ((pp - motion_str + 1) == ME_EPZS)
-            printf("(default)");
-        pp++;
-    }
-    printf("\n\n");
-    printf(
-"Note, the names of encoders and decoders dont always match, so there are\n"
-"several cases where the above table shows encoder only or decoder only entries\n"
-"even though both encoding and decoding are supported for example, the h263\n"
-"decoder corresponds to the h263 and h263p encoders, for file formats its even\n"
-"worse\n");
-    exit(1);
-}
-
-void parse_matrix_coeffs(uint16_t *dest, const char *str)
-{
-    int i;
-    const char *p = str;
-    for(i = 0;; i++) {
-        dest[i] = atoi(p);
-        if(i == 63)
-            break;
-        p = strchr(p, ',');
-        if(!p) {
-            fprintf(stderr, "Syntax error in matrix \"%s\" at coeff %d\n", str, i);
-            exit(1);
-        }
-        p++;
-    }
-}
-
-void opt_inter_matrix(const char *arg)
-{
-    inter_matrix = av_mallocz(sizeof(uint16_t) * 64);
-    parse_matrix_coeffs(inter_matrix, arg);
-}
-
-void opt_intra_matrix(const char *arg)
-{
-    intra_matrix = av_mallocz(sizeof(uint16_t) * 64);
-    parse_matrix_coeffs(intra_matrix, arg);
-}
-
-static void opt_target(const char *arg)
-{
-    int norm = -1;
-    static const char *const frame_rates[] = {"25", "30000/1001", "24000/1001"};
-
-    if(!strncmp(arg, "pal-", 4)) {
-        norm = 0;
-        arg += 4;
-    } else if(!strncmp(arg, "ntsc-", 5)) {
-        norm = 1;
-        arg += 5;
-    } else if(!strncmp(arg, "film-", 5)) {
-        norm = 2;
-        arg += 5;
-    } else {
-        int fr;
-        /* Calculate FR via float to avoid int overflow */
-        fr = (int)(frame_rate * 1000.0 / frame_rate_base);
-        if(fr == 25000) {
-            norm = 0;
-        } else if((fr == 29970) || (fr == 23976)) {
-            norm = 1;
-        } else {
-            /* Try to determine PAL/NTSC by peeking in the input files */
-            if(nb_input_files) {
-                int i, j;
-                for(j = 0; j < nb_input_files; j++) {
-                    for(i = 0; i < input_files[j]->nb_streams; i++) {
-                        AVCodecContext *c = input_files[j]->streams[i]->codec;
-                        if(c->codec_type != CODEC_TYPE_VIDEO)
-                            continue;
-                        fr = c->time_base.den * 1000 / c->time_base.num;
-                        if(fr == 25000) {
-                            norm = 0;
-                            break;
-                        } else if((fr == 29970) || (fr == 23976)) {
-                            norm = 1;
-                            break;
-                        }
-                    }
-                    if(norm >= 0)
-                        break;
-                }
-            }
-        }
-        if(verbose && norm >= 0)
-            fprintf(stderr, "Assuming %s for target.\n", norm ? "NTSC" : "PAL");
-    }
-
-    if(norm < 0) {
-        fprintf(stderr, "Could not determine norm (PAL/NTSC/NTSC-Film) for target.\n");
-        fprintf(stderr, "Please prefix target with \"pal-\", \"ntsc-\" or \"film-\",\n");
-        fprintf(stderr, "or set a framerate with \"-r xxx\".\n");
-        exit(1);
-    }
-
-    if(!strcmp(arg, "vcd")) {
-
-        opt_video_codec("mpeg1video");
-        opt_audio_codec("mp2");
-        opt_format("vcd");
-
-        opt_frame_size(norm ? "352x240" : "352x288");
-        opt_frame_rate(frame_rates[norm]);
-        opt_gop_size(norm ? "18" : "15");
-
-        video_bit_rate = 1150000;
-        video_rc_max_rate = 1150000;
-        video_rc_min_rate = 1150000;
-        video_rc_buffer_size = 40*1024*8;
-
-        audio_bit_rate = 224000;
-        audio_sample_rate = 44100;
-
-        mux_packet_size= 2324;
-        mux_rate= 2352 * 75 * 8;
-
-        /* We have to offset the PTS, so that it is consistent with the SCR.
-           SCR starts at 36000, but the first two packs contain only padding
-           and the first pack from the other stream, respectively, may also have
-           been written before.
-           So the real data starts at SCR 36000+3*1200. */
-        mux_preload= (36000+3*1200) / 90000.0; //0.44
-    } else if(!strcmp(arg, "svcd")) {
-
-        opt_video_codec("mpeg2video");
-        opt_audio_codec("mp2");
-        opt_format("svcd");
-
-        opt_frame_size(norm ? "480x480" : "480x576");
-        opt_frame_rate(frame_rates[norm]);
-        opt_gop_size(norm ? "18" : "15");
-
-        video_bit_rate = 2040000;
-        video_rc_max_rate = 2516000;
-        video_rc_min_rate = 0; //1145000;
-        video_rc_buffer_size = 224*1024*8;
-        opt_default("flags", "+SCAN_OFFSET");
 
 
-        audio_bit_rate = 224000;
-        audio_sample_rate = 44100;
-
-        mux_packet_size= 2324;
-
-    } else if(!strcmp(arg, "dvd")) {
-
-        opt_video_codec("mpeg2video");
-        opt_audio_codec("ac3");
-        opt_format("dvd");
-
-        opt_frame_size(norm ? "720x480" : "720x576");
-        opt_frame_rate(frame_rates[norm]);
-        opt_gop_size(norm ? "18" : "15");
-
-        video_bit_rate = 6000000;
-        video_rc_max_rate = 9000000;
-        video_rc_min_rate = 0; //1500000;
-        video_rc_buffer_size = 224*1024*8;
-
-        mux_packet_size= 2048;  // from www.mpucoder.com: DVD sectors contain 2048 bytes of data, this is also the size of one pack.
-        mux_rate = 10080000;    // from mplex project: data_rate = 1260000. mux_rate = data_rate * 8
-
-        audio_bit_rate = 448000;
-        audio_sample_rate = 48000;
-
-    } else if(!strcmp(arg, "dv")) {
-
-        opt_format("dv");
-
-        opt_frame_size(norm ? "720x480" : "720x576");
-        opt_frame_rate(frame_rates[norm]);
-
-        audio_sample_rate = 48000;
-        audio_channels = 2;
-
-    } else {
-        fprintf(stderr, "Unknown target: %s\n", arg);
-        exit(1);
-    }
-}
-
-static int opt_default(const char *opt, const char *arg){
-    AVOption *o= av_set_string(avctx_opts, opt, arg);
-    if(!o)
-        return -1;
-
-//    av_log(NULL, AV_LOG_ERROR, "%s:%s: %f 0x%0X\n", opt, arg, av_get_double(avctx_opts, opt, NULL), (int)av_get_int(avctx_opts, opt, NULL));
-
-    //FIXME we should always use avctx_opts, ... for storing options so there wont be any need to keep track of whats set over this
-    opt_names= av_realloc(opt_names, sizeof(void*)*(opt_name_count+1));
-    opt_names[opt_name_count++]= o->name;
-
-    /* disable generate of real time pts in ffm (need to be supressed anyway) */
-    if(avctx_opts->flags & CODEC_FLAG_BITEXACT)
-        ffm_nopts = 1;
-
-    if(avctx_opts->debug)
-        av_log_set_level(AV_LOG_DEBUG);
-    return 0;
-}
-
-const OptionDef options[] = {
-    /* main options */
-    { "formats", 0, {(void*)show_formats}, "show available formats, codecs, protocols, ..." },
-    { "f", HAS_ARG, {(void*)opt_format}, "force format", "fmt" },
-    { "img", HAS_ARG, {(void*)opt_image_format}, "force image format", "img_fmt" },
-    { "i", HAS_ARG, {(void*)opt_input_file}, "input file name", "filename" },
-    { "y", OPT_BOOL, {(void*)&file_overwrite}, "overwrite output files" },
-    { "map", HAS_ARG | OPT_EXPERT, {(void*)opt_map}, "set input stream mapping", "file:stream[:syncfile:syncstream]" },
-    { "map_meta_data", HAS_ARG | OPT_EXPERT, {(void*)opt_map_meta_data}, "set meta data information of outfile from infile", "outfile:infile" },
-    { "t", HAS_ARG, {(void*)opt_recording_time}, "set the recording time", "duration" },
-    { "fs", HAS_ARG | OPT_INT, {(void*)&limit_filesize}, "set the limit file size", "limit_size" }, //
-    { "ss", HAS_ARG, {(void*)opt_start_time}, "set the start time offset", "time_off" },
-    { "itsoffset", HAS_ARG, {(void*)opt_input_ts_offset}, "set the input ts offset", "time_off" },
-    { "title", HAS_ARG | OPT_STRING, {(void*)&str_title}, "set the title", "string" },
-    { "timestamp", HAS_ARG, {(void*)&opt_rec_timestamp}, "set the timestamp", "time" },
-    { "author", HAS_ARG | OPT_STRING, {(void*)&str_author}, "set the author", "string" },
-    { "copyright", HAS_ARG | OPT_STRING, {(void*)&str_copyright}, "set the copyright", "string" },
-    { "comment", HAS_ARG | OPT_STRING, {(void*)&str_comment}, "set the comment", "string" },
-    { "benchmark", OPT_BOOL | OPT_EXPERT, {(void*)&do_benchmark},
-      "add timings for benchmarking" },
-    { "dump", OPT_BOOL | OPT_EXPERT, {(void*)&do_pkt_dump},
-      "dump each input packet" },
-    { "hex", OPT_BOOL | OPT_EXPERT, {(void*)&do_hex_dump},
-      "when dumping packets, also dump the payload" },
-    { "re", OPT_BOOL | OPT_EXPERT, {(void*)&rate_emu}, "read input at native frame rate", "" },
-    { "loop", OPT_BOOL | OPT_EXPERT, {(void*)&loop_input}, "loop (current only works with images)" },
-    { "loop_output", HAS_ARG | OPT_INT | OPT_EXPERT, {(void*)&loop_output}, "number of times to loop output in formats that support looping (0 loops forever)", "" },
-    { "v", HAS_ARG, {(void*)opt_verbose}, "control amount of logging", "verbose" },
-    { "target", HAS_ARG, {(void*)opt_target}, "specify target file type (\"vcd\", \"svcd\", \"dvd\", \"dv\", \"pal-vcd\", \"ntsc-svcd\", ...)", "type" },
-    { "threads", HAS_ARG | OPT_EXPERT, {(void*)opt_thread_count}, "thread count", "count" },
-    { "vsync", HAS_ARG | OPT_INT | OPT_EXPERT, {(void*)&video_sync_method}, "video sync method", "" },
-    { "async", HAS_ARG | OPT_INT | OPT_EXPERT, {(void*)&audio_sync_method}, "audio sync method", "" },
-    { "vglobal", HAS_ARG | OPT_INT | OPT_EXPERT, {(void*)&video_global_header}, "video global header storage type", "" },
-    { "copyts", OPT_BOOL | OPT_EXPERT, {(void*)&copy_ts}, "copy timestamps" },
-    { "shortest", OPT_BOOL | OPT_EXPERT, {(void*)&opt_shortest}, "finish encoding within shortest input" }, //
-
-    /* video options */
-    { "b", HAS_ARG | OPT_VIDEO, {(void*)opt_video_bitrate}, "set video bitrate (in kbit/s)", "bitrate" },
-    { "vframes", OPT_INT | HAS_ARG | OPT_VIDEO, {(void*)&max_frames[CODEC_TYPE_VIDEO]}, "set the number of video frames to record", "number" },
-    { "aframes", OPT_INT | HAS_ARG | OPT_AUDIO, {(void*)&max_frames[CODEC_TYPE_AUDIO]}, "set the number of audio frames to record", "number" },
-    { "dframes", OPT_INT | HAS_ARG, {(void*)&max_frames[CODEC_TYPE_DATA]}, "set the number of data frames to record", "number" },
-    { "r", HAS_ARG | OPT_VIDEO, {(void*)opt_frame_rate}, "set frame rate (Hz value, fraction or abbreviation)", "rate" },
-    { "s", HAS_ARG | OPT_VIDEO, {(void*)opt_frame_size}, "set frame size (WxH or abbreviation)", "size" },
-    { "aspect", HAS_ARG | OPT_VIDEO, {(void*)opt_frame_aspect_ratio}, "set aspect ratio (4:3, 16:9 or 1.3333, 1.7777)", "aspect" },
-    { "pix_fmt", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_frame_pix_fmt}, "set pixel format", "format" },
-    { "croptop", HAS_ARG | OPT_VIDEO, {(void*)opt_frame_crop_top}, "set top crop band size (in pixels)", "size" },
-    { "cropbottom", HAS_ARG | OPT_VIDEO, {(void*)opt_frame_crop_bottom}, "set bottom crop band size (in pixels)", "size" },
-    { "cropleft", HAS_ARG | OPT_VIDEO, {(void*)opt_frame_crop_left}, "set left crop band size (in pixels)", "size" },
-    { "cropright", HAS_ARG | OPT_VIDEO, {(void*)opt_frame_crop_right}, "set right crop band size (in pixels)", "size" },
-    { "padtop", HAS_ARG | OPT_VIDEO, {(void*)opt_frame_pad_top}, "set top pad band size (in pixels)", "size" },
-    { "padbottom", HAS_ARG | OPT_VIDEO, {(void*)opt_frame_pad_bottom}, "set bottom pad band size (in pixels)", "size" },
-    { "padleft", HAS_ARG | OPT_VIDEO, {(void*)opt_frame_pad_left}, "set left pad band size (in pixels)", "size" },
-    { "padright", HAS_ARG | OPT_VIDEO, {(void*)opt_frame_pad_right}, "set right pad band size (in pixels)", "size" },
-    { "padcolor", HAS_ARG | OPT_VIDEO, {(void*)opt_pad_color}, "set color of pad bands (Hex 000000 thru FFFFFF)", "color" },
-    { "g", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_gop_size}, "set the group of picture size", "gop_size" },
-    { "intra", OPT_BOOL | OPT_EXPERT | OPT_VIDEO, {(void*)&intra_only}, "use only intra frames"},
-    { "vn", OPT_BOOL | OPT_VIDEO, {(void*)&video_disable}, "disable video" },
-    { "vdt", OPT_INT | HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)&video_discard}, "discard threshold", "n" },
-    { "qscale", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_qscale}, "use fixed video quantiser scale (VBR)", "q" },
-    { "qmin", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_qmin}, "min video quantiser scale (VBR)", "q" },
-    { "qmax", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_qmax}, "max video quantiser scale (VBR)", "q" },
-    { "lmin", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_lmin}, "min video lagrange factor (VBR)", "lambda" },
-    { "lmax", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_lmax}, "max video lagrange factor (VBR)", "lambda" },
-    { "mblmin", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_mb_lmin}, "min macroblock quantiser scale (VBR)", "q" },
-    { "mblmax", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_mb_lmax}, "max macroblock quantiser scale (VBR)", "q" },
-    { "qdiff", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_qdiff}, "max difference between the quantiser scale (VBR)", "q" },
-    { "qblur", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_qblur}, "video quantiser scale blur (VBR)", "blur" },
-    { "qsquish", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_qsquish}, "how to keep quantiser between qmin and qmax (0 = clip, 1 = use differentiable function)", "squish" },
-    { "qcomp", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_qcomp}, "video quantiser scale compression (VBR)", "compression" },
-    { "rc_init_cplx", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_rc_initial_cplx}, "initial complexity for 1-pass encoding", "complexity" },
-    { "b_qfactor", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_b_qfactor}, "qp factor between p and b frames", "factor" },
-    { "i_qfactor", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_i_qfactor}, "qp factor between p and i frames", "factor" },
-    { "b_qoffset", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_b_qoffset}, "qp offset between p and b frames", "offset" },
-    { "i_qoffset", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_i_qoffset}, "qp offset between p and i frames", "offset" },
-    { "ibias", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_ibias}, "intra quant bias", "bias" },
-    { "pbias", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_pbias}, "inter quant bias", "bias" },
-    { "rc_eq", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_video_rc_eq}, "set rate control equation", "equation" },
-    { "rc_override", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_video_rc_override_string}, "rate control override for specific intervals", "override" },
-    { "bt", HAS_ARG | OPT_VIDEO, {(void*)opt_video_bitrate_tolerance}, "set video bitrate tolerance (in kbit/s)", "tolerance" },
-    { "maxrate", HAS_ARG | OPT_VIDEO, {(void*)opt_video_bitrate_max}, "set max video bitrate tolerance (in kbit/s)", "bitrate" },
-    { "minrate", HAS_ARG | OPT_VIDEO, {(void*)opt_video_bitrate_min}, "set min video bitrate tolerance (in kbit/s)", "bitrate" },
-    { "bufsize", HAS_ARG | OPT_VIDEO, {(void*)opt_video_buffer_size}, "set ratecontrol buffer size (in kByte)", "size" },
-    { "vcodec", HAS_ARG | OPT_VIDEO, {(void*)opt_video_codec}, "force video codec ('copy' to copy stream)", "codec" },
-    { "me", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_motion_estimation}, "set motion estimation method",
-      "method" },
-    { "me_threshold", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_me_threshold}, "motion estimaton threshold",  "" },
-    { "mb_threshold", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_mb_threshold}, "macroblock threshold",  "" },
-    { "bf", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_b_frames}, "use 'frames' B frames", "frames" },
-    { "preme", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_pre_me}, "pre motion estimation", "" },
-    { "bug", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_workaround_bugs}, "workaround not auto detected encoder bugs", "param" },
-    { "ps", HAS_ARG | OPT_EXPERT, {(void*)opt_packet_size}, "set packet size in bits", "size" },
-    { "error", HAS_ARG | OPT_EXPERT, {(void*)opt_error_rate}, "error rate", "rate" },
-    { "strict", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_strict}, "how strictly to follow the standards", "strictness" },
-    { "sameq", OPT_BOOL | OPT_VIDEO, {(void*)&same_quality},
-      "use same video quality as source (implies VBR)" },
-    { "pass", HAS_ARG | OPT_VIDEO, {(void*)&opt_pass}, "select the pass number (1 or 2)", "n" },
-    { "passlogfile", HAS_ARG | OPT_STRING | OPT_VIDEO, {(void*)&pass_logfilename}, "select two pass log file name", "file" },
-    { "deinterlace", OPT_BOOL | OPT_EXPERT | OPT_VIDEO, {(void*)&do_deinterlace},
-      "deinterlace pictures" },
-    { "psnr", OPT_BOOL | OPT_EXPERT | OPT_VIDEO, {(void*)&do_psnr}, "calculate PSNR of compressed frames" },
-    { "vstats", OPT_BOOL | OPT_EXPERT | OPT_VIDEO, {(void*)&do_vstats}, "dump video coding statistics to file" },
-    { "vhook", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)add_frame_hooker}, "insert video processing module", "module" },
-    { "intra_matrix", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_intra_matrix}, "specify intra matrix coeffs", "matrix" },
-    { "inter_matrix", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_inter_matrix}, "specify inter matrix coeffs", "matrix" },
-    { "top", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_top_field_first}, "top=1/bottom=0/auto=-1 field first", "" },
-    { "sc_threshold", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_sc_threshold}, "scene change threshold", "threshold" },
-    { "me_range", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_me_range}, "limit motion vectors range (1023 for DivX player)", "range" },
-    { "dc", OPT_INT | HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)&intra_dc_precision}, "intra_dc_precision", "precision" },
-    { "mepc", OPT_INT | HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)&me_penalty_compensation}, "motion estimation bitrate penalty compensation", "factor (1.0 = 256)" },
-    { "vtag", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_video_tag}, "force video tag/fourcc", "fourcc/tag" },
-    { "skip_threshold", OPT_INT | HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)&frame_skip_threshold}, "frame skip threshold", "threshold" },
-    { "skip_factor", OPT_INT | HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)&frame_skip_factor}, "frame skip factor", "factor" },
-    { "skip_exp", OPT_INT | HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)&frame_skip_exp}, "frame skip exponent", "exponent" },
-    { "newvideo", OPT_VIDEO, {(void*)opt_new_video_stream}, "add a new video stream to the current output stream" },
-    { "genpts", OPT_BOOL | OPT_EXPERT | OPT_VIDEO, { (void *)&genpts }, "generate pts" },
-    { "qphist", OPT_BOOL | OPT_EXPERT | OPT_VIDEO, { (void *)&qp_hist }, "show QP histogram" },
-
-    /* audio options */
-    { "ab", HAS_ARG | OPT_AUDIO, {(void*)opt_audio_bitrate}, "set audio bitrate (in kbit/s)", "bitrate", },
-    { "aq", OPT_FLOAT | HAS_ARG | OPT_AUDIO, {(void*)&audio_qscale}, "set audio quality (codec-specific)", "quality", },
-    { "ar", HAS_ARG | OPT_AUDIO, {(void*)opt_audio_rate}, "set audio sampling rate (in Hz)", "rate" },
-    { "ac", HAS_ARG | OPT_AUDIO, {(void*)opt_audio_channels}, "set number of audio channels", "channels" },
-    { "an", OPT_BOOL | OPT_AUDIO, {(void*)&audio_disable}, "disable audio" },
-    { "acodec", HAS_ARG | OPT_AUDIO, {(void*)opt_audio_codec}, "force audio codec ('copy' to copy stream)", "codec" },
-    { "atag", HAS_ARG | OPT_EXPERT | OPT_AUDIO, {(void*)opt_audio_tag}, "force audio tag/fourcc", "fourcc/tag" },
-    { "vol", OPT_INT | HAS_ARG | OPT_AUDIO, {(void*)&audio_volume}, "change audio volume (256=normal)" , "volume" }, //
-    { "newaudio", OPT_AUDIO, {(void*)opt_new_audio_stream}, "add a new audio stream to the current output stream" },
-    { "alang", HAS_ARG | OPT_STRING | OPT_AUDIO, {(void *)&audio_language}, "set the ISO 639 language code (3 letters) of the current audio stream" , "code" },
-
-    /* subtitle options */
-    { "scodec", HAS_ARG | OPT_SUBTITLE, {(void*)opt_subtitle_codec}, "force subtitle codec ('copy' to copy stream)", "codec" },
-    { "newsubtitle", OPT_SUBTITLE, {(void*)opt_new_subtitle_stream}, "add a new subtitle stream to the current output stream" },
-    { "slang", HAS_ARG | OPT_STRING | OPT_SUBTITLE, {(void *)&subtitle_language}, "set the ISO 639 language code (3 letters) of the current subtitle stream" , "code" },
-
-    /* grab options */
-    { "vd", HAS_ARG | OPT_EXPERT | OPT_VIDEO | OPT_GRAB, {(void*)opt_video_device}, "set video grab device", "device" },
-    { "vc", HAS_ARG | OPT_EXPERT | OPT_VIDEO | OPT_GRAB, {(void*)opt_video_channel}, "set video grab channel (DV1394 only)", "channel" },
-    { "tvstd", HAS_ARG | OPT_EXPERT | OPT_VIDEO | OPT_GRAB, {(void*)opt_video_standard}, "set television standard (NTSC, PAL (SECAM))", "standard" },
-    { "ad", HAS_ARG | OPT_EXPERT | OPT_AUDIO | OPT_GRAB, {(void*)opt_audio_device}, "set audio device", "device" },
-
-    /* G.2 grab options */
-    { "grab", HAS_ARG | OPT_EXPERT | OPT_GRAB, {(void*)opt_grab}, "request grabbing using", "format" },
-    { "gd", HAS_ARG | OPT_EXPERT | OPT_VIDEO | OPT_GRAB, {(void*)opt_grab_device}, "set grab device", "device" },
-
-    /* muxer options */
-    { "muxrate", OPT_INT | HAS_ARG | OPT_EXPERT, {(void*)&mux_rate}, "set mux rate", "rate" },
-    { "packetsize", OPT_INT | HAS_ARG | OPT_EXPERT, {(void*)&mux_packet_size}, "set packet size", "size" },
-    { "muxdelay", OPT_FLOAT | HAS_ARG | OPT_EXPERT, {(void*)&mux_max_delay}, "set the maximum demux-decode delay", "seconds" },
-    { "muxpreload", OPT_FLOAT | HAS_ARG | OPT_EXPERT, {(void*)&mux_preload}, "set the initial demux-decode delay", "seconds" },
-    { "default", OPT_FUNC2 | HAS_ARG | OPT_AUDIO | OPT_VIDEO | OPT_EXPERT, {(void*)opt_default}, "generic catch all option", "" },
-    { NULL, },
-};
+//const OptionDef options[] = {
+//    /* main options */
+//    { "formats", 0, {(void*)show_formats}, "show available formats, codecs, protocols, ..." },
+//    { "f", HAS_ARG, {(void*)opt_format}, "force format", "fmt" },
+//    { "img", HAS_ARG, {(void*)opt_image_format}, "force image format", "img_fmt" },
+//    { "i", HAS_ARG, {(void*)opt_input_file}, "input file name", "filename" },
+//    { "y", OPT_BOOL, {(void*)&file_overwrite}, "overwrite output files" },
+//    { "map", HAS_ARG | OPT_EXPERT, {(void*)opt_map}, "set input stream mapping", "file:stream[:syncfile:syncstream]" },
+//    { "map_meta_data", HAS_ARG | OPT_EXPERT, {(void*)opt_map_meta_data}, "set meta data information of outfile from infile", "outfile:infile" },
+//    { "t", HAS_ARG, {(void*)opt_recording_time}, "set the recording time", "duration" },
+//    { "fs", HAS_ARG | OPT_INT, {(void*)&limit_filesize}, "set the limit file size", "limit_size" }, //
+//    { "ss", HAS_ARG, {(void*)opt_start_time}, "set the start time offset", "time_off" },
+//    { "itsoffset", HAS_ARG, {(void*)opt_input_ts_offset}, "set the input ts offset", "time_off" },
+//    { "title", HAS_ARG | OPT_STRING, {(void*)&str_title}, "set the title", "string" },
+//    { "timestamp", HAS_ARG, {(void*)&opt_rec_timestamp}, "set the timestamp", "time" },
+//    { "author", HAS_ARG | OPT_STRING, {(void*)&str_author}, "set the author", "string" },
+//    { "copyright", HAS_ARG | OPT_STRING, {(void*)&str_copyright}, "set the copyright", "string" },
+//    { "comment", HAS_ARG | OPT_STRING, {(void*)&str_comment}, "set the comment", "string" },
+//    { "benchmark", OPT_BOOL | OPT_EXPERT, {(void*)&do_benchmark},
+//      "add timings for benchmarking" },
+//    { "dump", OPT_BOOL | OPT_EXPERT, {(void*)&do_pkt_dump},
+//      "dump each input packet" },
+//    { "hex", OPT_BOOL | OPT_EXPERT, {(void*)&do_hex_dump},
+//      "when dumping packets, also dump the payload" },
+//    { "re", OPT_BOOL | OPT_EXPERT, {(void*)&rate_emu}, "read input at native frame rate", "" },
+//    { "loop", OPT_BOOL | OPT_EXPERT, {(void*)&loop_input}, "loop (current only works with images)" },
+//    { "loop_output", HAS_ARG | OPT_INT | OPT_EXPERT, {(void*)&loop_output}, "number of times to loop output in formats that support looping (0 loops forever)", "" },
+//    { "v", HAS_ARG, {(void*)opt_verbose}, "control amount of logging", "verbose" },
+//    { "target", HAS_ARG, {(void*)opt_target}, "specify target file type (\"vcd\", \"svcd\", \"dvd\", \"dv\", \"pal-vcd\", \"ntsc-svcd\", ...)", "type" },
+//    { "threads", HAS_ARG | OPT_EXPERT, {(void*)opt_thread_count}, "thread count", "count" },
+//    { "vsync", HAS_ARG | OPT_INT | OPT_EXPERT, {(void*)&video_sync_method}, "video sync method", "" },
+//    { "async", HAS_ARG | OPT_INT | OPT_EXPERT, {(void*)&audio_sync_method}, "audio sync method", "" },
+//    { "vglobal", HAS_ARG | OPT_INT | OPT_EXPERT, {(void*)&video_global_header}, "video global header storage type", "" },
+//    { "copyts", OPT_BOOL | OPT_EXPERT, {(void*)&copy_ts}, "copy timestamps" },
+//    { "shortest", OPT_BOOL | OPT_EXPERT, {(void*)&opt_shortest}, "finish encoding within shortest input" }, //
+//
+//    /* video options */
+//    { "b", HAS_ARG | OPT_VIDEO, {(void*)opt_video_bitrate}, "set video bitrate (in kbit/s)", "bitrate" },
+//    { "vframes", OPT_INT | HAS_ARG | OPT_VIDEO, {(void*)&max_frames[CODEC_TYPE_VIDEO]}, "set the number of video frames to record", "number" },
+//    { "aframes", OPT_INT | HAS_ARG | OPT_AUDIO, {(void*)&max_frames[CODEC_TYPE_AUDIO]}, "set the number of audio frames to record", "number" },
+//    { "dframes", OPT_INT | HAS_ARG, {(void*)&max_frames[CODEC_TYPE_DATA]}, "set the number of data frames to record", "number" },
+//    { "r", HAS_ARG | OPT_VIDEO, {(void*)opt_frame_rate}, "set frame rate (Hz value, fraction or abbreviation)", "rate" },
+//    { "s", HAS_ARG | OPT_VIDEO, {(void*)opt_frame_size}, "set frame size (WxH or abbreviation)", "size" },
+//    { "aspect", HAS_ARG | OPT_VIDEO, {(void*)opt_frame_aspect_ratio}, "set aspect ratio (4:3, 16:9 or 1.3333, 1.7777)", "aspect" },
+//    { "pix_fmt", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_frame_pix_fmt}, "set pixel format", "format" },
+//    { "croptop", HAS_ARG | OPT_VIDEO, {(void*)opt_frame_crop_top}, "set top crop band size (in pixels)", "size" },
+//    { "cropbottom", HAS_ARG | OPT_VIDEO, {(void*)opt_frame_crop_bottom}, "set bottom crop band size (in pixels)", "size" },
+//    { "cropleft", HAS_ARG | OPT_VIDEO, {(void*)opt_frame_crop_left}, "set left crop band size (in pixels)", "size" },
+//    { "cropright", HAS_ARG | OPT_VIDEO, {(void*)opt_frame_crop_right}, "set right crop band size (in pixels)", "size" },
+//    { "padtop", HAS_ARG | OPT_VIDEO, {(void*)opt_frame_pad_top}, "set top pad band size (in pixels)", "size" },
+//    { "padbottom", HAS_ARG | OPT_VIDEO, {(void*)opt_frame_pad_bottom}, "set bottom pad band size (in pixels)", "size" },
+//    { "padleft", HAS_ARG | OPT_VIDEO, {(void*)opt_frame_pad_left}, "set left pad band size (in pixels)", "size" },
+//    { "padright", HAS_ARG | OPT_VIDEO, {(void*)opt_frame_pad_right}, "set right pad band size (in pixels)", "size" },
+//    { "padcolor", HAS_ARG | OPT_VIDEO, {(void*)opt_pad_color}, "set color of pad bands (Hex 000000 thru FFFFFF)", "color" },
+//    { "g", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_gop_size}, "set the group of picture size", "gop_size" },
+//    { "intra", OPT_BOOL | OPT_EXPERT | OPT_VIDEO, {(void*)&intra_only}, "use only intra frames"},
+//    { "vn", OPT_BOOL | OPT_VIDEO, {(void*)&video_disable}, "disable video" },
+//    { "vdt", OPT_INT | HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)&video_discard}, "discard threshold", "n" },
+//    { "qscale", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_qscale}, "use fixed video quantiser scale (VBR)", "q" },
+//    { "qmin", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_qmin}, "min video quantiser scale (VBR)", "q" },
+//    { "qmax", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_qmax}, "max video quantiser scale (VBR)", "q" },
+//    { "lmin", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_lmin}, "min video lagrange factor (VBR)", "lambda" },
+//    { "lmax", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_lmax}, "max video lagrange factor (VBR)", "lambda" },
+//    { "mblmin", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_mb_lmin}, "min macroblock quantiser scale (VBR)", "q" },
+//    { "mblmax", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_mb_lmax}, "max macroblock quantiser scale (VBR)", "q" },
+//    { "qdiff", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_qdiff}, "max difference between the quantiser scale (VBR)", "q" },
+//    { "qblur", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_qblur}, "video quantiser scale blur (VBR)", "blur" },
+//    { "qsquish", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_qsquish}, "how to keep quantiser between qmin and qmax (0 = clip, 1 = use differentiable function)", "squish" },
+//    { "qcomp", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_qcomp}, "video quantiser scale compression (VBR)", "compression" },
+//    { "rc_init_cplx", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_rc_initial_cplx}, "initial complexity for 1-pass encoding", "complexity" },
+//    { "b_qfactor", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_b_qfactor}, "qp factor between p and b frames", "factor" },
+//    { "i_qfactor", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_i_qfactor}, "qp factor between p and i frames", "factor" },
+//    { "b_qoffset", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_b_qoffset}, "qp offset between p and b frames", "offset" },
+//    { "i_qoffset", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_i_qoffset}, "qp offset between p and i frames", "offset" },
+//    { "ibias", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_ibias}, "intra quant bias", "bias" },
+//    { "pbias", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_pbias}, "inter quant bias", "bias" },
+//    { "rc_eq", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_video_rc_eq}, "set rate control equation", "equation" },
+//    { "rc_override", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_video_rc_override_string}, "rate control override for specific intervals", "override" },
+//    { "bt", HAS_ARG | OPT_VIDEO, {(void*)opt_video_bitrate_tolerance}, "set video bitrate tolerance (in kbit/s)", "tolerance" },
+//    { "maxrate", HAS_ARG | OPT_VIDEO, {(void*)opt_video_bitrate_max}, "set max video bitrate tolerance (in kbit/s)", "bitrate" },
+//    { "minrate", HAS_ARG | OPT_VIDEO, {(void*)opt_video_bitrate_min}, "set min video bitrate tolerance (in kbit/s)", "bitrate" },
+//    { "bufsize", HAS_ARG | OPT_VIDEO, {(void*)opt_video_buffer_size}, "set ratecontrol buffer size (in kByte)", "size" },
+//    { "vcodec", HAS_ARG | OPT_VIDEO, {(void*)opt_video_codec}, "force video codec ('copy' to copy stream)", "codec" },
+//    { "me", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_motion_estimation}, "set motion estimation method",
+//      "method" },
+//    { "me_threshold", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_me_threshold}, "motion estimaton threshold",  "" },
+//    { "mb_threshold", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_mb_threshold}, "macroblock threshold",  "" },
+//    { "bf", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_b_frames}, "use 'frames' B frames", "frames" },
+//    { "preme", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_pre_me}, "pre motion estimation", "" },
+//    { "bug", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_workaround_bugs}, "workaround not auto detected encoder bugs", "param" },
+//    { "ps", HAS_ARG | OPT_EXPERT, {(void*)opt_packet_size}, "set packet size in bits", "size" },
+//    { "error", HAS_ARG | OPT_EXPERT, {(void*)opt_error_rate}, "error rate", "rate" },
+//    { "strict", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_strict}, "how strictly to follow the standards", "strictness" },
+//    { "sameq", OPT_BOOL | OPT_VIDEO, {(void*)&same_quality},
+//      "use same video quality as source (implies VBR)" },
+//    { "pass", HAS_ARG | OPT_VIDEO, {(void*)&opt_pass}, "select the pass number (1 or 2)", "n" },
+//    { "passlogfile", HAS_ARG | OPT_STRING | OPT_VIDEO, {(void*)&pass_logfilename}, "select two pass log file name", "file" },
+//    { "deinterlace", OPT_BOOL | OPT_EXPERT | OPT_VIDEO, {(void*)&do_deinterlace},
+//      "deinterlace pictures" },
+//    { "psnr", OPT_BOOL | OPT_EXPERT | OPT_VIDEO, {(void*)&do_psnr}, "calculate PSNR of compressed frames" },
+//    { "vstats", OPT_BOOL | OPT_EXPERT | OPT_VIDEO, {(void*)&do_vstats}, "dump video coding statistics to file" },
+//    { "vhook", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)add_frame_hooker}, "insert video processing module", "module" },
+//    { "intra_matrix", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_intra_matrix}, "specify intra matrix coeffs", "matrix" },
+//    { "inter_matrix", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_inter_matrix}, "specify inter matrix coeffs", "matrix" },
+//    { "top", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_top_field_first}, "top=1/bottom=0/auto=-1 field first", "" },
+//    { "sc_threshold", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_sc_threshold}, "scene change threshold", "threshold" },
+//    { "me_range", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_me_range}, "limit motion vectors range (1023 for DivX player)", "range" },
+//    { "dc", OPT_INT | HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)&intra_dc_precision}, "intra_dc_precision", "precision" },
+//    { "mepc", OPT_INT | HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)&me_penalty_compensation}, "motion estimation bitrate penalty compensation", "factor (1.0 = 256)" },
+//    { "vtag", HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)opt_video_tag}, "force video tag/fourcc", "fourcc/tag" },
+//    { "skip_threshold", OPT_INT | HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)&frame_skip_threshold}, "frame skip threshold", "threshold" },
+//    { "skip_factor", OPT_INT | HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)&frame_skip_factor}, "frame skip factor", "factor" },
+//    { "skip_exp", OPT_INT | HAS_ARG | OPT_EXPERT | OPT_VIDEO, {(void*)&frame_skip_exp}, "frame skip exponent", "exponent" },
+//    { "newvideo", OPT_VIDEO, {(void*)opt_new_video_stream}, "add a new video stream to the current output stream" },
+//    { "genpts", OPT_BOOL | OPT_EXPERT | OPT_VIDEO, { (void *)&genpts }, "generate pts" },
+//    { "qphist", OPT_BOOL | OPT_EXPERT | OPT_VIDEO, { (void *)&qp_hist }, "show QP histogram" },
+//
+//    /* audio options */
+//    { "ab", HAS_ARG | OPT_AUDIO, {(void*)opt_audio_bitrate}, "set audio bitrate (in kbit/s)", "bitrate", },
+//    { "aq", OPT_FLOAT | HAS_ARG | OPT_AUDIO, {(void*)&audio_qscale}, "set audio quality (codec-specific)", "quality", },
+//    { "ar", HAS_ARG | OPT_AUDIO, {(void*)opt_audio_rate}, "set audio sampling rate (in Hz)", "rate" },
+//    { "ac", HAS_ARG | OPT_AUDIO, {(void*)opt_audio_channels}, "set number of audio channels", "channels" },
+//    { "an", OPT_BOOL | OPT_AUDIO, {(void*)&audio_disable}, "disable audio" },
+//    { "acodec", HAS_ARG | OPT_AUDIO, {(void*)opt_audio_codec}, "force audio codec ('copy' to copy stream)", "codec" },
+//    { "atag", HAS_ARG | OPT_EXPERT | OPT_AUDIO, {(void*)opt_audio_tag}, "force audio tag/fourcc", "fourcc/tag" },
+//    { "vol", OPT_INT | HAS_ARG | OPT_AUDIO, {(void*)&audio_volume}, "change audio volume (256=normal)" , "volume" }, //
+//    { "newaudio", OPT_AUDIO, {(void*)opt_new_audio_stream}, "add a new audio stream to the current output stream" },
+//    { "alang", HAS_ARG | OPT_STRING | OPT_AUDIO, {(void *)&audio_language}, "set the ISO 639 language code (3 letters) of the current audio stream" , "code" },
+//
+//    /* subtitle options */
+//    { "scodec", HAS_ARG | OPT_SUBTITLE, {(void*)opt_subtitle_codec}, "force subtitle codec ('copy' to copy stream)", "codec" },
+//    { "newsubtitle", OPT_SUBTITLE, {(void*)opt_new_subtitle_stream}, "add a new subtitle stream to the current output stream" },
+//    { "slang", HAS_ARG | OPT_STRING | OPT_SUBTITLE, {(void *)&subtitle_language}, "set the ISO 639 language code (3 letters) of the current subtitle stream" , "code" },
+//
+//    /* grab options */
+//    { "vd", HAS_ARG | OPT_EXPERT | OPT_VIDEO | OPT_GRAB, {(void*)opt_video_device}, "set video grab device", "device" },
+//    { "vc", HAS_ARG | OPT_EXPERT | OPT_VIDEO | OPT_GRAB, {(void*)opt_video_channel}, "set video grab channel (DV1394 only)", "channel" },
+//    { "tvstd", HAS_ARG | OPT_EXPERT | OPT_VIDEO | OPT_GRAB, {(void*)opt_video_standard}, "set television standard (NTSC, PAL (SECAM))", "standard" },
+//    { "ad", HAS_ARG | OPT_EXPERT | OPT_AUDIO | OPT_GRAB, {(void*)opt_audio_device}, "set audio device", "device" },
+//
+//    /* G.2 grab options */
+//    { "grab", HAS_ARG | OPT_EXPERT | OPT_GRAB, {(void*)opt_grab}, "request grabbing using", "format" },
+//    { "gd", HAS_ARG | OPT_EXPERT | OPT_VIDEO | OPT_GRAB, {(void*)opt_grab_device}, "set grab device", "device" },
+//
+//    /* muxer options */
+//    { "muxrate", OPT_INT | HAS_ARG | OPT_EXPERT, {(void*)&mux_rate}, "set mux rate", "rate" },
+//    { "packetsize", OPT_INT | HAS_ARG | OPT_EXPERT, {(void*)&mux_packet_size}, "set packet size", "size" },
+//    { "muxdelay", OPT_FLOAT | HAS_ARG | OPT_EXPERT, {(void*)&mux_max_delay}, "set the maximum demux-decode delay", "seconds" },
+//    { "muxpreload", OPT_FLOAT | HAS_ARG | OPT_EXPERT, {(void*)&mux_preload}, "set the initial demux-decode delay", "seconds" },
+//    { "default", OPT_FUNC2 | HAS_ARG | OPT_AUDIO | OPT_VIDEO | OPT_EXPERT, {(void*)opt_default}, "generic catch all option", "" },
+//    { NULL, },
+//};
 
 
 void parse_arg_file(const char *filename)
@@ -4139,6 +3046,7 @@ int ffmpeg_do_transcode(char *in_file, char *out_file, int avitrate, int vbitrat
 	return 1;
 }
 
+/*
 int ffmpeg_main(int argc, char **argv, int(*cb)(void *, int), void *ptr)
 {
     int i;
@@ -4153,10 +3061,8 @@ int ffmpeg_main(int argc, char **argv, int(*cb)(void *, int), void *ptr)
 	frame_padtop = frame_padbottom = 0;
 	frame_padleft = frame_padright = 0;
 
-    /* parse options */
     parse_options(argc, argv, options);
 
-    /* file converter / grab */
     if ( (nb_output_files != 1) || (nb_input_files != 1)) {
         fprintf(stderr, "Must supply at least one output file\n");
         return 0;
@@ -4170,9 +3076,7 @@ int ffmpeg_main(int argc, char **argv, int(*cb)(void *, int), void *ptr)
               stream_maps, nb_stream_maps);
     ti = getutime() - ti;
 
-    /* close files */
     for(i=0;i<nb_output_files;i++) {
-        /* maybe av_close_output_file ??? */
         AVFormatContext *s = output_files[i];
         int j;
         if (!(s->oformat->flags & AVFMT_NOFILE))
@@ -4191,3 +3095,4 @@ int ffmpeg_main(int argc, char **argv, int(*cb)(void *, int), void *ptr)
 
     return 0;
 }
+*/

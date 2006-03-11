@@ -117,7 +117,7 @@ CAVInfo::CAVInfo(const char *filename)
 	} else {
 		return;
 	}
-	m_frame_count = m_st->nb_frames ? m_st->nb_frames : int(m_sec * m_fps);
+	m_frame_count = m_st->nb_frames ? m_st->nb_frames : int( (m_sec + 1) * m_fps);
 	
     // Allocate an AVFrame structure
 	m_pFrame = avcodec_alloc_frame();
@@ -314,36 +314,10 @@ bool CFFmpeg_Glue::RunTranscode(
 	return true;
 }
 
-bool CFFmpeg_Glue::RunThumbnail(const char *infile, const char *outfile,
-	const char *offset, const char *size, const char *v_pad, const char *h_pad)
-{
-	const char *ffmpeg_opts[256];
-	
-	int i = 0;
-	// "must" set
-	ffmpeg_opts[i++] = "ffmpeg"; ffmpeg_opts[i++] = "-y";
-	ffmpeg_opts[i++] = "-i"; ffmpeg_opts[i++] = infile;
-	ffmpeg_opts[i++] = "-s"; ffmpeg_opts[i++] = size;
-	ffmpeg_opts[i++] = "-b"; ffmpeg_opts[i++] = "200";
-	if ( v_pad && strlen(v_pad) ) {
-		ffmpeg_opts[i++] = "-padtop"; ffmpeg_opts[i++] = v_pad;
-		ffmpeg_opts[i++] = "-padbottom"; ffmpeg_opts[i++] = v_pad;
-	}
-	if ( h_pad && strlen(h_pad) ) {
-		ffmpeg_opts[i++] = "-padleft"; ffmpeg_opts[i++] = h_pad;
-		ffmpeg_opts[i++] = "-padright"; ffmpeg_opts[i++] = h_pad;
-	}
-	ffmpeg_opts[i++] = "-r"; ffmpeg_opts[i++] = "1";
-	ffmpeg_opts[i++] = "-t"; ffmpeg_opts[i++] = "1";
-	ffmpeg_opts[i++] = "-ss"; ffmpeg_opts[i++] = offset;
-	ffmpeg_opts[i++] = "-an";
-	ffmpeg_opts[i++] = "-f"; ffmpeg_opts[i++] = "mjpeg";
-
-	ffmpeg_opts[i++] = outfile;
-	
-	ffmpeg_opts[i++] = 0;
-	
-	ffmpeg_main(i-1, (char **)ffmpeg_opts, 0, 0);
-
-	return true;
-}
+// generate thumbnail by ffmpeg call. Don't think it's needed
+//bool CFFmpeg_Glue::RunThumbnail(const char *infile, const char *outfile,
+//	const char *offset, const char *size, const char *v_pad, const char *h_pad)
+//{
+//
+//	return true;
+//}

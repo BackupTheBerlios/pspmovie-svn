@@ -266,7 +266,7 @@ void CTranscode::RunTranscode(CFFmpeg_Glue &ffmpeg, int (cb)(void *, int), void 
 		fi.baseName(true), cb, ptr);
 }
 
-void CTranscode::RunThumbnail(CFFmpeg_Glue &ffmpeg)
+void CTranscode::RunThumbnail(CFFmpeg_Glue &)
 {
 	QFileInfo fi(m_src);
 	QString target_path = GetAppSettings()->TargetDir().filePath(fi.baseName(true) + ".thm");
@@ -274,14 +274,7 @@ void CTranscode::RunThumbnail(CFFmpeg_Glue &ffmpeg)
 	CAVInfo m_in_info(m_src);
 	m_in_info.Seek(m_thumbnail_time);
 	m_in_info.GetNextFrame();
-//	
-//	int thm_off = m_in_info.Sec() / 10;
-//	if ( thm_off > 20 ) {
-//		thm_off = 20;
-//	}
-//	QString thm_time;
-//	thm_time = QString("%1").arg(m_thumbnail_time);
-//	ffmpeg.RunThumbnail(m_src, target_path, thm_time, m_th_size, m_th_v_padding, m_th_h_padding);
+
 	QImage img(m_in_info.ImageData(), m_in_info.W(), m_in_info.H(),
 		32, 0, 0, QImage::LittleEndian);
 	img.scale(160, 120, QImage::ScaleMin).save(target_path, "JPEG");

@@ -22,8 +22,6 @@
 
 QString CastToXBytes(unsigned long size);
 
-class CJobControlImp;
-
 #include "avutils.h"
 
 class CTranscode {
@@ -33,15 +31,10 @@ class CTranscode {
 		bool m_fix_aspect;
 		
 		// output stream params
-//		QString m_size;
-//		QString m_s_bitrate, m_v_bitrate;
-//		QString m_v_padding, m_h_padding;
 		int m_s_bitrate, m_v_bitrate;
 		int m_v_padding, m_h_padding;
 		
 		// thumbnail padding/size
-//		QString m_th_size;
-//		QString m_th_v_padding, m_th_h_padding;
 		uint32_t m_thumbnail_time;
 		
 		// input stream params
