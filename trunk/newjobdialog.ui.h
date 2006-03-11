@@ -29,13 +29,16 @@ void NewJobDialog::Browse_clicked()
 
 void NewJobDialog::slider_thm_time_valueChanged(int v)
 {
-    printf("curr value = %d\n", v);
-    uint32_t seek_time = m_avinfo->Sec() * v / 100;
-    if ( m_avinfo->Seek(seek_time) && m_avinfo->GetNextFrame() )  {
+    //printf("curr value = %d\n", v);
+    m_thumbnail_time = m_avinfo->Sec() * v / 100;
+    if ( m_avinfo->Seek(m_thumbnail_time) && m_avinfo->GetNextFrame() )  {
     	QImage img(m_avinfo->ImageData(), m_avinfo->W(), m_avinfo->H(),
     		32, 0, 0, QImage::LittleEndian);
     	//img.save("th-frame.bmp", "BMP");
     	pixmapLabel_Thumbnail->setPixmap(img);
+    	lCDNumber_H->display((int)m_thumbnail_time / 3600);
+    	lCDNumber_M->display((int)(m_thumbnail_time / 60) % 60);
+    	lCDNumber_S->display((int)m_thumbnail_time % 60);
     }
 }
 
@@ -43,6 +46,15 @@ void NewJobDialog::slider_thm_time_valueChanged(int v)
 void NewJobDialog::lineEdit_File_textChanged( const QString &s)
 {
 	m_avinfo = new CAVInfo(s);
+	lCDNumber_H->display((int)0);
+	lCDNumber_M->display((int)0);
+	lCDNumber_S->display((int)0);
+	slider_thm_time->setValue(0);
+	m_thumbnail_time = 0;
+	QImage img(m_avinfo->ImageData(), m_avinfo->W(), m_avinfo->H(),
+		32, 0, 0, QImage::LittleEndian);
+	pixmapLabel_Thumbnail->setPixmap(img);
+		
 }
 
 

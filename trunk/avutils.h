@@ -47,6 +47,13 @@ class CAVInfo {
 		CAVInfo()
 		{
 			/* for stl */ 
+			m_img_data = 0;
+			m_fctx = 0;
+			m_st = 0;
+			m_acctx = 0;
+			m_codec = 0;
+			m_pFrame = 0;
+			m_pFrameRGB = 0;
 		}
 		~CAVInfo();
 		

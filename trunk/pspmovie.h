@@ -40,10 +40,13 @@ class CTranscode {
 		// thumbnail padding/size
 		QString m_th_size;
 		QString m_th_v_padding, m_th_h_padding;
+		uint32_t m_thumbnail_time;
 		
 		// input stream params
-		CAVInfo m_in_info;
-
+		//CAVInfo m_in_info;
+		bool m_input_ok;
+		uint32_t m_frame_count;
+				
 		QString m_str_duration;
 		
 		// for lookup in job queue
@@ -53,7 +56,7 @@ class CTranscode {
 		bool m_being_run;
 	public:
 	
-		CTranscode(QString &src,
+		CTranscode(QString &src, uint32_t thumbnail_time,
 			QString &s_bitrate, QString &v_bitrate, bool fix_aspect);
 		
 		bool IsOK();
