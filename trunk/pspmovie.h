@@ -43,7 +43,6 @@ class CTranscode {
 		uint32_t m_thumbnail_time;
 		
 		// input stream params
-		//CAVInfo m_in_info;
 		bool m_input_ok;
 		uint32_t m_frame_count;
 				
