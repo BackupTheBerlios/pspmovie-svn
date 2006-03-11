@@ -195,25 +195,6 @@
             </property>
         </widget>
     </widget>
-    <widget class="QCheckBox">
-        <property name="name">
-            <cstring>checkBox_FixAspect</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>280</x>
-                <y>80</y>
-                <width>143</width>
-                <height>20</height>
-            </rect>
-        </property>
-        <property name="text">
-            <string>Auto fix aspect ratio</string>
-        </property>
-        <property name="checked">
-            <bool>true</bool>
-        </property>
-    </widget>
     <widget class="QGroupBox">
         <property name="name">
             <cstring>groupBox1</cstring>
@@ -441,6 +422,41 @@
             <string></string>
         </property>
     </widget>
+    <widget class="QGroupBox">
+        <property name="name">
+            <cstring>groupBox15</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>260</x>
+                <y>60</y>
+                <width>210</width>
+                <height>90</height>
+            </rect>
+        </property>
+        <property name="title">
+            <string>Aspect ratio</string>
+        </property>
+        <widget class="QCheckBox">
+            <property name="name">
+                <cstring>checkBox_FixAspect</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>20</x>
+                    <y>20</y>
+                    <width>180</width>
+                    <height>20</height>
+                </rect>
+            </property>
+            <property name="text">
+                <string>Adjust for full-screen view</string>
+            </property>
+            <property name="checked">
+                <bool>true</bool>
+            </property>
+        </widget>
+    </widget>
 </widget>
 <connections>
     <connection>
@@ -480,6 +496,7 @@
 </includes>
 <variables>
     <variable>CAVInfo *m_avinfo;</variable>
+    <variable access="public">uint32_t m_thumbnail_time;</variable>
 </variables>
 <slots>
     <slot>Browse_clicked()</slot>
