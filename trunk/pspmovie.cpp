@@ -146,12 +146,8 @@ CTranscode::CTranscode(QString &src, uint32_t thumbnail_time,
 	m_src = src;
 	m_thumbnail_time = thumbnail_time;
 	
-	// some tell, that other resolution is possible. Never find it to
-	// be true	
-	m_size = "320x240";
-
-	m_s_bitrate = s_bitrate;
-	m_v_bitrate = v_bitrate;
+	m_s_bitrate = s_bitrate.toInt();
+	m_v_bitrate = v_bitrate.toInt();
 	m_fix_aspect = fix_aspect;
 	
 	m_id = m_curr_id++;
@@ -169,11 +165,15 @@ CTranscode::CTranscode(QString &src, uint32_t thumbnail_time,
 		m_short_src = m_src;
 	}
 
-	QRegExp rate_exp("[0-9]{2,3}kbps");
-	if ( !rate_exp.exactMatch(s_bitrate) ) {
+	QRegExp rate_exp("([0-9]){2,3}kbps");
+	if ( rate_exp.exactMatch(s_bitrate) ) {
+		m_s_bitrate = rate_exp.cap(1).toInt();
+	} else {
 		Q_ASSERT(false);
 	}
-	if ( !rate_exp.exactMatch(v_bitrate) ) {
+	if ( rate_exp.exactMatch(v_bitrate) ) {
+		m_v_bitrate = rate_exp.cap(1).toInt();
+	} else {
 		Q_ASSERT(false);
 	}
 	
@@ -206,23 +206,23 @@ CTranscode::CTranscode(QString &src, uint32_t thumbnail_time,
 			w = 320;
 			h = in_info.H() * 160 * 8 / in_info.W() / 3;
 		}
-		int pad_v = ((240 - h) / 2) & 0xfffe;
-		int pad_h = ((320 - w) / 2) & 0xfffe;
+		m_v_padding = ((240 - h) / 2) & 0xfffe;
+		m_h_padding = ((320 - w) / 2) & 0xfffe;
 		
-		if ( (h + 2 * pad_v) != 240 ) {
-			h += 240 - (h + 2 * pad_v);
+		if ( (h + 2 * m_v_padding) != 240 ) {
+			h += 240 - (h + 2 * m_v_padding);
 		}
-		if ( (w + 2 * pad_h) != 320 ) {
-			w += 320 - (w + 2 * pad_h);
+		if ( (w + 2 * m_h_padding) != 320 ) {
+			w += 320 - (w + 2 * m_h_padding);
 		}
 
-		m_size = QString("%1x%2") .arg(w) . arg(h);
-		if (  pad_v ) {
-			m_v_padding = QString("%1") . arg(pad_v);
-		}
-		if (  pad_h ) {
-			m_h_padding = QString("%1") . arg(pad_h);
-		}
+//		m_size = QString("%1x%2") .arg(w) . arg(h);
+//		if (  pad_v ) {
+//			m_v_padding = QString("%1") . arg(pad_v);
+//		}
+//		if (  pad_h ) {
+//			m_h_padding = QString("%1") . arg(pad_h);
+//		}
 		// thumbnail aspect
 //		if ( ratio < (120.0/160.0) ) {
 //			int t_pad_v = ((120 - m_in_info.H() * 160 / m_in_info.W()) / 2) & 0xfffe;
@@ -233,6 +233,9 @@ CTranscode::CTranscode(QString &src, uint32_t thumbnail_time,
 //			m_th_h_padding = QString("%1") . arg(t_pad_h);
 //			m_th_size = QString("%1x120") . arg(160 - 2 * t_pad_h);
 //		}
+	} else {
+		m_v_padding = 0;
+		m_h_padding = 0;
 	}
 }
 
@@ -251,8 +254,16 @@ void CTranscode::RunTranscode(CFFmpeg_Glue &ffmpeg, int (cb)(void *, int), void 
 	m_being_run = true;
 	QFileInfo fi(m_src);
 	QString target_path = GetAppSettings()->TargetDir().filePath(fi.baseName(true) + ".mp4");
-	ffmpeg.RunTranscode(m_src, target_path, m_s_bitrate, m_v_bitrate, fi.baseName(true),
-		m_size, m_v_padding, m_h_padding, cb, ptr);
+	
+	//
+	// Some tell, that other resolutions bisides 320x240 are possible. Never
+	// found it to be true
+	//
+	int v_size = 240 - 2*m_v_padding;
+	int h_size = 320 - 2*m_h_padding;
+	ffmpeg.RunTranscode(m_src, target_path, m_s_bitrate, m_v_bitrate,
+		v_size, h_size, m_v_padding, m_h_padding, 
+		fi.baseName(true), cb, ptr);
 }
 
 void CTranscode::RunThumbnail(CFFmpeg_Glue &ffmpeg)

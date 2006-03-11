@@ -301,46 +301,15 @@ bool CFFmpeg_Glue::IsValidVersion()
 
 bool CFFmpeg_Glue::RunTranscode(
 			const char *infile, const char *outfile,
-			const char *abitrate, const char *vbitrate,
+			int abitrate, int vbitrate,
+			int v_size, int h_size,
+			int v_pad, int h_pad,
 			const char *title,
-			const char *size, const char *v_pad, const char *h_pad,
 			int (*callback)(void *, int frame), void *uptr)
 {
-	const char *ffmpeg_opts[256];
-	
-	int i = 0;
-	// "must" set
-	ffmpeg_opts[i++] = "ffmpeg"; ffmpeg_opts[i++] = "-y";
-	ffmpeg_opts[i++] = "-i"; ffmpeg_opts[i++] = infile;
-	ffmpeg_opts[i++] = "-b"; ffmpeg_opts[i++] = vbitrate;
-	ffmpeg_opts[i++] = "-ab"; ffmpeg_opts[i++] = abitrate;
-	ffmpeg_opts[i++] = "-title"; ffmpeg_opts[i++] = title;
-	ffmpeg_opts[i++] = "-s"; ffmpeg_opts[i++] = size;
-
-	ffmpeg_opts[i++] = "-f"; ffmpeg_opts[i++] = "psp";
-	ffmpeg_opts[i++] = "-r"; ffmpeg_opts[i++] = "29.970030";
-	ffmpeg_opts[i++] = "-ar"; ffmpeg_opts[i++] = "24000";
-	ffmpeg_opts[i++] = "-ac"; ffmpeg_opts[i++] = "2";
-
-	if ( v_pad && strlen(v_pad) ) {
-		ffmpeg_opts[i++] = "-padtop"; ffmpeg_opts[i++] = v_pad;
-		ffmpeg_opts[i++] = "-padbottom"; ffmpeg_opts[i++] = v_pad;
-	}
-	if ( h_pad && strlen(h_pad) ) {
-		ffmpeg_opts[i++] = "-padleft"; ffmpeg_opts[i++] = h_pad;
-		ffmpeg_opts[i++] = "-padright"; ffmpeg_opts[i++] = h_pad;
-	}
-	
-	// current call params
-	
-	ffmpeg_opts[i++] = outfile;
-	
-	ffmpeg_opts[i++] = 0;
-	
-	ffmpeg_main(i-1, (char **)ffmpeg_opts, callback, uptr);
-	
 	ffmpeg_do_transcode((char *)infile, (char *)outfile,
-		128, 768, 240, 320, 0, 0, (char *)title, callback, uptr);
+		abitrate, vbitrate, v_size, h_size, v_pad, h_pad,
+		(char *)title, callback, uptr);
 		
 	return true;
 }

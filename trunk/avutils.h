@@ -99,12 +99,20 @@ class CFFmpeg_Glue {
 		//
 		// Call to encoder loop
 		//
+//		bool RunTranscode(
+//			const char *infile, const char *outfile,
+//			const char *abitrate, const char *vbitrate,
+//			const char *title,
+//			const char *size, const char *v_pad, const char *h_pad,
+//			int (*callback)(void *, int frame), void *uptr);
 		bool RunTranscode(
 			const char *infile, const char *outfile,
-			const char *abitrate, const char *vbitrate,
+			int abitrate, int vbitrate,
+			int v_size, int h_size,
+			int v_pad, int h_pad,
 			const char *title,
-			const char *size, const char *v_pad, const char *h_pad,
 			int (*callback)(void *, int frame), void *uptr);
+
 		//
 		// Call to create thumbnail image.
 		// offset have firmat hh:mm:ss.SS
