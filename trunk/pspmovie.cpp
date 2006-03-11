@@ -134,11 +134,11 @@ void CJobControlImp::ProcessDone()
 int CTranscode::m_curr_id = 1001;
 
 CTranscode::CTranscode(QString &src, uint32_t thumbnail_time,
-			QString &s_bitrate, QString &v_bitrate, bool fix_aspect)/* : m_in_info(src)*/
+			QString &s_bitrate, QString &v_bitrate, bool fix_aspect)
 {
-	CAVInfo m_in_info(src);
-	m_input_ok = m_in_info.HaveVStream() && m_in_info.CodecOk();
-	m_frame_count = m_in_info.FrameCount();
+	CAVInfo in_info(src);
+	m_input_ok = in_info.HaveVStream() && in_info.CodecOk();
+	m_frame_count = in_info.FrameCount();
 	if ( !m_input_ok ) {
 		return;
 	}
@@ -180,9 +180,9 @@ CTranscode::CTranscode(QString &src, uint32_t thumbnail_time,
 	s_bitrate.replace("kpbs", "", false);
 	v_bitrate.replace("kpbs", "", false);
 
-	int s = m_in_info.Sec() % 60, ms = m_in_info.Usec() / 1000;
-	int h = m_in_info.Sec() / 3600;
-	int m = (m_in_info.Sec() - h*3600) / 60;
+	int s = in_info.Sec() % 60, ms = in_info.Usec() / 1000;
+	int h = in_info.Sec() / 3600;
+	int m = (in_info.Sec() - h*3600) / 60;
 	m_str_duration = QString( "%1:%2:%3.%4" )
                     .arg( h ) .arg( m ) .arg( s ) .arg( ms );
 
@@ -192,18 +192,19 @@ CTranscode::CTranscode(QString &src, uint32_t thumbnail_time,
 		 * resize movie to fit the screen discarding aspect ratio
 		 */
 		int h, w;
-		float ratio = (float)m_in_info.H() / (float)m_in_info.W();
+		float ratio = (float)in_info.H() / (float)in_info.W();
+		// adding horizontal/vertical strips. In this case movie is being optimized
+		// for full-screen view mode (aspect ratio is discarded)
 		if ( ratio >= (9.0/16.0) ) {
 			// adding vertical strips. In this case movie is being optimized
 			// for scaled view mode (aspect ratio is maintainted)
 			h = 240;
-			w = m_in_info.W() * 240 / m_in_info.H();
+			//w = m_in_info.W() * 240 / m_in_info.H();
+			w = in_info.W() * 180 / in_info.H();
 		} else {
-			// adding horizontal strips. In this case movie is being optimized
-			// for full-screen view mode (aspect ratio is discarded)
 			// h = H/W x 480 x (240/270)
 			w = 320;
-			h = m_in_info.H() * 160 * 8 / m_in_info.W() / 3;
+			h = in_info.H() * 160 * 8 / in_info.W() / 3;
 		}
 		int pad_v = ((240 - h) / 2) & 0xfffe;
 		int pad_h = ((320 - w) / 2) & 0xfffe;
@@ -223,27 +224,25 @@ CTranscode::CTranscode(QString &src, uint32_t thumbnail_time,
 			m_h_padding = QString("%1") . arg(pad_h);
 		}
 		// thumbnail aspect
-		if ( ratio < (120.0/160.0) ) {
-			int t_pad_v = ((120 - m_in_info.H() * 160 / m_in_info.W()) / 2) & 0xfffe;
-			m_th_v_padding = QString("%1") . arg(t_pad_v);
-			m_th_size = QString("160x%1") . arg(120 - 2 * t_pad_v);
-		} else {
-			int t_pad_h = ((160 - m_in_info.W() * 120 / m_in_info.H()) / 2) & 0xfffe;
-			m_th_h_padding = QString("%1") . arg(t_pad_h);
-			m_th_size = QString("%1x120") . arg(160 - 2 * t_pad_h);
-		}
+//		if ( ratio < (120.0/160.0) ) {
+//			int t_pad_v = ((120 - m_in_info.H() * 160 / m_in_info.W()) / 2) & 0xfffe;
+//			m_th_v_padding = QString("%1") . arg(t_pad_v);
+//			m_th_size = QString("160x%1") . arg(120 - 2 * t_pad_v);
+//		} else {
+//			int t_pad_h = ((160 - m_in_info.W() * 120 / m_in_info.H()) / 2) & 0xfffe;
+//			m_th_h_padding = QString("%1") . arg(t_pad_h);
+//			m_th_size = QString("%1x120") . arg(160 - 2 * t_pad_h);
+//		}
 	}
 }
 
 bool CTranscode::IsOK()
 {
-	//return m_in_info.HaveVStream() && m_in_info.CodecOk();
 	return m_input_ok;
 }
 
 int CTranscode::TotalFrames()
 {
-	//return m_in_info.FrameCount();
 	return m_frame_count;
 }
 
@@ -274,7 +273,7 @@ void CTranscode::RunThumbnail(CFFmpeg_Glue &ffmpeg)
 //	ffmpeg.RunThumbnail(m_src, target_path, thm_time, m_th_size, m_th_v_padding, m_th_h_padding);
 	QImage img(m_in_info.ImageData(), m_in_info.W(), m_in_info.H(),
 		32, 0, 0, QImage::LittleEndian);
-	img.scale(160, 120).save(target_path, "JPEG");
+	img.scale(160, 120, QImage::ScaleMin).save(target_path, "JPEG");
 }
 
 

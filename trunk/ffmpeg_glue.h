@@ -20,6 +20,9 @@ extern "C" {
 #endif
 
 int ffmpeg_main(int argc, char **argv, int(*cb)(void *, int), void *ptr);
+int ffmpeg_do_transcode(char *in_file, char *out_file, int avitrate, int vbitrate,
+		int size_v, int size_h, int pad_v, int pad_h, char *title,
+		int(*cb)(void *, int), void *ptr);
 
 void ffmpeg_init();
 

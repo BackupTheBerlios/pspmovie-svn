@@ -339,6 +339,9 @@ bool CFFmpeg_Glue::RunTranscode(
 	
 	ffmpeg_main(i-1, (char **)ffmpeg_opts, callback, uptr);
 	
+	ffmpeg_do_transcode((char *)infile, (char *)outfile,
+		128, 768, 240, 320, 0, 0, (char *)title, callback, uptr);
+		
 	return true;
 }
 

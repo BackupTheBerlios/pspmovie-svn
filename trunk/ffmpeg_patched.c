@@ -259,7 +259,6 @@ static int using_stdin = 0;
 static int using_vhook = 0;
 static int verbose = 1;
 static int thread_count= 1;
-static int q_pressed = 0;
 static int me_range = 0;
 static int64_t video_size = 0;
 static int64_t audio_size = 0;
@@ -3880,15 +3879,6 @@ static void opt_target(const char *arg)
     }
 }
 
-static void show_version(void)
-{
-    fprintf(stderr, "ffmpeg      " FFMPEG_VERSION "\n"
-           "libavcodec  %d\n"
-           "libavformat %d\n",
-           avcodec_build(), LIBAVFORMAT_BUILD);
-    exit(1);
-}
-
 static int opt_default(const char *opt, const char *arg){
     AVOption *o= av_set_string(avctx_opts, opt, arg);
     if(!o)
@@ -4078,6 +4068,75 @@ void ffmpeg_init()
 void ffmpeg_deinit()
 {
     av_free_static();
+}
+
+int ffmpeg_do_transcode(char *in_file, char *out_file, int avitrate, int vbitrate,
+		int size_v, int size_h, int pad_v, int pad_h, char *title,
+		int(*cb)(void *, int), void *ptr)
+{
+	int i;
+	received_sigterm = 0;
+	file_overwrite = 1;
+	nb_input_files = nb_output_files = nb_stream_maps = nb_meta_data_maps = 0;
+	
+	audio_disable = video_disable = 0;
+	recording_time = 0;
+	start_time = 0;
+
+	cpp_passed_ptr = ptr;
+	cpp_callback = cb;
+
+	opt_input_file(in_file);
+
+	// PSP codec params
+	audio_channels = 2;
+	audio_sample_rate = 24000;
+	frame_rate = 30000000;
+	frame_rate_base = 1001000;
+	
+	// size & padding	
+	frame_width = size_h;
+	frame_height = size_v;
+	frame_padtop = frame_padbottom = pad_v;
+	frame_padleft = frame_padright = pad_h;
+
+	// codecs
+	file_iformat = 0;
+	file_oformat = guess_format("psp", 0, 0);
+	
+	// rates
+	video_bit_rate = vbitrate * 1000;
+	audio_bit_rate = avitrate * 1000;
+	
+	str_title = title;
+	opt_output_file(out_file);
+	
+    av_encode(output_files, nb_output_files, input_files, nb_input_files,
+              stream_maps, nb_stream_maps);
+
+    /* close files */
+    for(i=0;i<nb_output_files;i++) {
+        /* maybe av_close_output_file ??? */
+        AVFormatContext *s = output_files[i];
+        int j;
+        if (!(s->oformat->flags & AVFMT_NOFILE))
+            url_fclose(&s->pb);
+        for(j=0;j<s->nb_streams;j++)
+            av_free(s->streams[j]);
+        av_free(s);
+    }
+    for(i=0;i<nb_input_files;i++) {
+        av_close_input_file(input_files[i]);
+    }
+    
+    if(intra_matrix) {
+        av_free(intra_matrix);
+    }
+    if(inter_matrix) {
+        av_free(inter_matrix);
+    }
+    
+	return 1;
 }
 
 int ffmpeg_main(int argc, char **argv, int(*cb)(void *, int), void *ptr)
