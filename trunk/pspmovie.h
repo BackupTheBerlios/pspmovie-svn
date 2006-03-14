@@ -64,12 +64,9 @@ class CTranscode {
 		int Id() { return m_id; }
 		
 		// for display in gui
-		QString StrDuration() { return m_str_duration; }
-		QString ShortName() { return m_short_src; }
-		QString Target()
-		{
-			return m_s_bitrate + " / " + m_v_bitrate;
-		}
+		const QString StrDuration() { return m_str_duration; }
+		const QString ShortName() { return m_short_src; }
+		const QString Target();
 };
 
 class CJobQueue {

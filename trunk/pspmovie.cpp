@@ -146,8 +146,6 @@ CTranscode::CTranscode(QString &src, uint32_t thumbnail_time,
 	m_src = src;
 	m_thumbnail_time = thumbnail_time;
 	
-	m_s_bitrate = s_bitrate.toInt();
-	m_v_bitrate = v_bitrate.toInt();
 	m_fix_aspect = fix_aspect;
 	
 	m_id = m_curr_id++;
@@ -165,20 +163,22 @@ CTranscode::CTranscode(QString &src, uint32_t thumbnail_time,
 		m_short_src = m_src;
 	}
 
-	QRegExp rate_exp("([0-9]){2,3}kbps");
-	if ( rate_exp.exactMatch(s_bitrate) ) {
-		m_s_bitrate = rate_exp.cap(1).toInt();
-	} else {
-		Q_ASSERT(false);
-	}
-	if ( rate_exp.exactMatch(v_bitrate) ) {
-		m_v_bitrate = rate_exp.cap(1).toInt();
-	} else {
-		Q_ASSERT(false);
-	}
+//	QRegExp rate_exp("([0-9]){2,3}kbps");
+//	if ( rate_exp.exactMatch(s_bitrate) ) {
+//		m_s_bitrate = rate_exp.cap(1).toInt();
+//	} else {
+//		Q_ASSERT(false);
+//	}
+//	if ( rate_exp.exactMatch(v_bitrate) ) {
+//		m_v_bitrate = rate_exp.cap(1).toInt();
+//	} else {
+//		Q_ASSERT(false);
+//	}
 	
-	s_bitrate.replace("kpbs", "", false);
-	v_bitrate.replace("kpbs", "", false);
+	s_bitrate.replace("kbps", "", false);
+	v_bitrate.replace("kbps", "", false);
+	m_s_bitrate = s_bitrate.toInt();
+	m_v_bitrate = v_bitrate.toInt();
 
 	int s = in_info.Sec() % 60, ms = in_info.Usec() / 1000;
 	int h = in_info.Sec() / 3600;
@@ -280,6 +280,12 @@ void CTranscode::RunThumbnail(CFFmpeg_Glue &)
 	img.scale(160, 120, QImage::ScaleMin).save(target_path, "JPEG");
 }
 
+const QString CTranscode::Target()
+{
+	QString s = QString("%1kbps / %2") . arg(m_v_bitrate) . arg(m_s_bitrate);
+
+	return s;
+}
 
 //
 // Queue of pending and running jobs

@@ -46,15 +46,9 @@ void NewJobDialog::slider_thm_time_valueChanged(int v)
 void NewJobDialog::lineEdit_File_textChanged( const QString &s)
 {
 	m_avinfo = new CAVInfo(s);
-	lCDNumber_H->display((int)0);
-	lCDNumber_M->display((int)0);
-	lCDNumber_S->display((int)0);
-	slider_thm_time->setValue(0);
 	m_thumbnail_time = 0;
-	QImage img(m_avinfo->ImageData(), m_avinfo->W(), m_avinfo->H(),
-		32, 0, 0, QImage::LittleEndian);
-	pixmapLabel_Thumbnail->setPixmap(img);
-		
+	
+	slider_thm_time_valueChanged(1);
 }
 
 
