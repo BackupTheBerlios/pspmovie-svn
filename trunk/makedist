@@ -1,6 +1,6 @@
 #!/bin/tcsh
 
-set VERSION=0.0.1
+set VERSION=0.0.2
 
 echo "Creating TGZ & RPM version ${VERSION}"
 make dist

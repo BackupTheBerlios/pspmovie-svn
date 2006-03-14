@@ -1,6 +1,6 @@
 Summary: A program transcode video files into Sony PSP mp4 format
 Name: pspmovie
-Version: 0.0.1
+Version: 0.0.2
 Release: 1%{?dist}
 License: GPL
 Group:  Applications/Multimedia
