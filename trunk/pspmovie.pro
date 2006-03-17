@@ -47,7 +47,9 @@ IMAGES	= images/stock_calc-cancel.png \
 	images/stock_up.png \
 	images/stock_left.png \
 	images/stock_right.png \
-	images/sonypsp.png
+	images/sonypsp.png \
+	images/cancel.png \
+	images/ok.png
 
 TARGET      = pspmovie
 
