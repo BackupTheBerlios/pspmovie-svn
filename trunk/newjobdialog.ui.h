@@ -29,9 +29,6 @@ void NewJobDialog::Browse_clicked()
 
 void NewJobDialog::slider_thm_time_valueChanged(int v)
 {
-    if ( !m_avinfo->HaveVStream() ) {
-	return;
-    }
     m_thumbnail_time = m_avinfo->Sec() * v / 100;
     if ( m_avinfo->Seek(m_thumbnail_time) && m_avinfo->GetNextFrame() )  {
     	QImage img(m_avinfo->ImageData(), m_avinfo->W(), m_avinfo->H(),
@@ -46,9 +43,28 @@ void NewJobDialog::slider_thm_time_valueChanged(int v)
 
 void NewJobDialog::lineEdit_File_textChanged( const QString &s)
 {
+	if ( s.stripWhiteSpace().length() == 0 ) {
+    	pixmapLabel_Status->setPixmap(QImage::fromMimeSource("cancel.png"));
+    	textLabel_Status->setText("No input file");
+    	m_avinfo = 0;
+		return;
+	}
+	
+	if ( m_avinfo ) {
+		delete m_avinfo;
+	}
+	
 	m_avinfo = new CAVInfo(s);
 	m_thumbnail_time = 0;
-	
+
+    if ( !m_avinfo->HaveVStream() || !m_avinfo->HaveAStream() || !m_avinfo->CodecOk() ) {
+    	pixmapLabel_Status->setPixmap(QImage::fromMimeSource("cancel.png"));
+    	textLabel_Status->setText(m_avinfo->InputError());
+		return;
+    }
+	pixmapLabel_Status->setPixmap(QImage::fromMimeSource("ok.png"));
+	textLabel_Status->setText("input file is OK");
+
 	slider_thm_time_valueChanged(1);
 }
 
