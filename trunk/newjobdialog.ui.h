@@ -43,13 +43,17 @@ void NewJobDialog::slider_thm_time_valueChanged(int v)
 
 void NewJobDialog::lineEdit_File_textChanged( const QString &s)
 {
+	pixmapLabel_Status->setPixmap(QImage::fromMimeSource("cancel.png"));
 	if ( s.stripWhiteSpace().length() == 0 ) {
-    	pixmapLabel_Status->setPixmap(QImage::fromMimeSource("cancel.png"));
     	textLabel_Status->setText("No input file");
     	m_avinfo = 0;
 		return;
 	}
-	
+	QFileInfo fi(s);
+	if ( !QFile::exists(s) || !fi.exists() ) {
+    	textLabel_Status->setText("Input file doesn't exists");
+    	return;
+	}
 	if ( m_avinfo ) {
 		delete m_avinfo;
 	}
@@ -58,7 +62,6 @@ void NewJobDialog::lineEdit_File_textChanged( const QString &s)
 	m_thumbnail_time = 0;
 
     if ( !m_avinfo->HaveVStream() || !m_avinfo->HaveAStream() || !m_avinfo->CodecOk() ) {
-    	pixmapLabel_Status->setPixmap(QImage::fromMimeSource("cancel.png"));
     	textLabel_Status->setText(m_avinfo->InputError());
 		return;
     }

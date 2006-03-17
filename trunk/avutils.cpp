@@ -66,12 +66,12 @@ CAVInfo::CAVInfo(const char *filename)
 			
 	if ( av_open_input_file(&m_fctx, filename, 0, 0, 0) != 0 ) {
 		printf("av_open_input_file - error\n");
-		m_stream_error = "Unable to open input file";
+		m_stream_error = "Unrecognized format";
 		return;
 	}
 	if( av_find_stream_info(m_fctx) < 0) {
 		printf("av_find_stream_info - error\n");
-		m_stream_error = "Input file have unrecognized format";
+		m_stream_error = "No stream info";
 		return;
 	}
 
@@ -95,12 +95,12 @@ CAVInfo::CAVInfo(const char *filename)
 	}
 	if(!m_have_vstream) {
     	printf("Didn't find a video stream\n");
-		m_stream_error = "Input file have no video stream";
+		m_stream_error = "No video stream";
     	return ;
 	}
 	if(!m_have_astream) {
     	printf("Didn't find a audio stream\n");
-		m_stream_error = "Input file have no audio stream";
+		m_stream_error = "No audio stream";
     	return ;
 	}
 
