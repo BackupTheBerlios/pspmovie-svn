@@ -81,7 +81,7 @@
             </column>
             <column>
                 <property name="text">
-                    <string>Output params</string>
+                    <string>Output stream</string>
                 </property>
                 <property name="clickable">
                     <bool>true</bool>

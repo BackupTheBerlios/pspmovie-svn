@@ -29,12 +29,13 @@ void NewJobDialog::Browse_clicked()
 
 void NewJobDialog::slider_thm_time_valueChanged(int v)
 {
-    //printf("curr value = %d\n", v);
+    if ( !m_avinfo->HaveVStream() ) {
+	return;
+    }
     m_thumbnail_time = m_avinfo->Sec() * v / 100;
     if ( m_avinfo->Seek(m_thumbnail_time) && m_avinfo->GetNextFrame() )  {
     	QImage img(m_avinfo->ImageData(), m_avinfo->W(), m_avinfo->H(),
     		32, 0, 0, QImage::LittleEndian);
-    	//img.save("th-frame.bmp", "BMP");
     	pixmapLabel_Thumbnail->setPixmap(img);
     	lCDNumber_H->display((int)m_thumbnail_time / 3600);
     	lCDNumber_M->display((int)(m_thumbnail_time / 60) % 60);
