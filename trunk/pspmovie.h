@@ -39,6 +39,8 @@ class CTranscode {
 		
 		// input stream params
 		bool m_input_ok;
+		QString m_input_error;
+		
 		uint32_t m_frame_count;
 				
 		QString m_str_duration;
@@ -54,6 +56,7 @@ class CTranscode {
 			QString &s_bitrate, QString &v_bitrate, bool fix_aspect);
 		
 		bool IsOK();
+		const QString InputError() { return m_input_error; }
 
 		int TotalFrames();
 		

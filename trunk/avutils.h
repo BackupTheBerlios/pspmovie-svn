@@ -21,8 +21,9 @@
 
 
 class CAVInfo {
-		bool m_have_vstream;
+		bool m_have_vstream, m_have_astream;
 		bool m_codec_ok;
+		char *m_stream_error;
 		
 		int m_sec, m_usec;
 		int m_width, m_height;
@@ -58,7 +59,10 @@ class CAVInfo {
 		~CAVInfo();
 		
 		bool HaveVStream() { return m_have_vstream; }
+		bool HaveAStream() { return m_have_astream; }
 		bool CodecOk() { return m_codec_ok; }
+		const char *InputError() { return m_stream_error; }
+		
 		int Sec() { return m_sec; }
 		int Usec() { return m_usec; }
 		

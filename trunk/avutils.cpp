@@ -53,6 +53,7 @@ bool CanDoPSP()
 CAVInfo::CAVInfo(const char *filename)
 {
 	m_have_vstream = false;
+	m_have_astream = false;
 	m_codec_ok = false;
 	m_title[0] = 0;
 	m_img_data = 0;
@@ -65,17 +66,14 @@ CAVInfo::CAVInfo(const char *filename)
 			
 	if ( av_open_input_file(&m_fctx, filename, 0, 0, 0) != 0 ) {
 		printf("av_open_input_file - error\n");
+		m_stream_error = "Unable to open input file";
 		return;
 	}
 	if( av_find_stream_info(m_fctx) < 0) {
 		printf("av_find_stream_info - error\n");
+		m_stream_error = "Input file have unrecognized format";
 		return;
 	}
-
-#ifdef AVLIB_TEST
-	dump_format(m_fctx, 0, filename, false);
-	printf("Title [%s] comment [%s]\n", fctx->title, fctx->comment);
-#endif
 
  	m_sec = m_fctx->duration / AV_TIME_BASE;
     m_usec = m_fctx->duration % AV_TIME_BASE;
@@ -87,11 +85,22 @@ CAVInfo::CAVInfo(const char *filename)
 			m_height = m_fctx->streams[i]->codec->height;
 	        m_videoStream = i;
 	        m_have_vstream = true;
-    	    break;
  		}
+		if ( m_fctx->streams[i]->codec->codec_type == CODEC_TYPE_AUDIO) {
+	        m_have_astream = true;
+		}
+		if ( m_have_vstream && m_have_astream ) {
+    	    break;
+		}
 	}
 	if(!m_have_vstream) {
     	printf("Didn't find a video stream\n");
+		m_stream_error = "Input file have no video stream";
+    	return ;
+	}
+	if(!m_have_astream) {
+    	printf("Didn't find a audio stream\n");
+		m_stream_error = "Input file have no audio stream";
     	return ;
 	}
 

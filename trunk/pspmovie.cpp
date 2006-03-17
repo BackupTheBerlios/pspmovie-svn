@@ -137,11 +137,12 @@ CTranscode::CTranscode(QString &src, uint32_t thumbnail_time,
 			QString &s_bitrate, QString &v_bitrate, bool fix_aspect)
 {
 	CAVInfo in_info(src);
-	m_input_ok = in_info.HaveVStream() && in_info.CodecOk();
-	m_frame_count = in_info.FrameCount();
+	m_input_ok = in_info.HaveVStream() && in_info.HaveAStream() && in_info.CodecOk();
 	if ( !m_input_ok ) {
+		m_input_error = in_info.InputError();
 		return;
 	}
+	m_frame_count = in_info.FrameCount();
 	m_being_run = false;
 	m_src = src;
 	m_thumbnail_time = thumbnail_time;
@@ -163,18 +164,6 @@ CTranscode::CTranscode(QString &src, uint32_t thumbnail_time,
 		m_short_src = m_src;
 	}
 
-//	QRegExp rate_exp("([0-9]){2,3}kbps");
-//	if ( rate_exp.exactMatch(s_bitrate) ) {
-//		m_s_bitrate = rate_exp.cap(1).toInt();
-//	} else {
-//		Q_ASSERT(false);
-//	}
-//	if ( rate_exp.exactMatch(v_bitrate) ) {
-//		m_v_bitrate = rate_exp.cap(1).toInt();
-//	} else {
-//		Q_ASSERT(false);
-//	}
-	
 	s_bitrate.replace("kbps", "", false);
 	v_bitrate.replace("kbps", "", false);
 	m_s_bitrate = s_bitrate.toInt();
@@ -282,7 +271,7 @@ void CTranscode::RunThumbnail(CFFmpeg_Glue &)
 
 const QString CTranscode::Target()
 {
-	QString s = QString("%1kbps / %2") . arg(m_v_bitrate) . arg(m_s_bitrate);
+	QString s = QString("%1 / %2 kbps") . arg(m_v_bitrate) . arg(m_s_bitrate);
 
 	return s;
 }
@@ -348,7 +337,7 @@ bool CJobQueue::Add(CTranscode &job)
 		return true;
 	} else {
 		QMessageBox::critical(qApp->mainWidget(),
-			"Error", "Unrecognized file format");
+			"Error", job.InputError());
 		return false;
 	}
 }
