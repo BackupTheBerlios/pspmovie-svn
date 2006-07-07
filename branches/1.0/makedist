@@ -1,0 +1,32 @@
+#!/bin/tcsh
+
+set VERSION=0.0.2
+
+echo "Creating TGZ & RPM version ${VERSION}"
+make dist
+
+if (!(-f pspmovie.tar.gz)) then
+	exit(-1)
+endif
+echo repacking ....
+tar xzf pspmovie.tar.gz
+/bin/rm -rf "pspmovie-${VERSION}"
+mv pspmovie "pspmovie-${VERSION}"
+/bin/rm pspmovie.tar.gz
+
+#echo "Checking out FFMPEG ..."
+#cd "pspmovie-${VERSION}"
+#cvs -z9 -d:pserver:anonymous@mplayerhq.hu:/cvsroot/ffmpeg co ffmpeg
+#cd ..
+/bin/cp -r ffmpeg-CVS "pspmovie-${VERSION}"/ffmpeg
+/bin/cp README TODO COPYING ChangeLog pspmovie.desktop pspmovie.spec "pspmovie-${VERSION}"
+/bin/cp images/sonypsp.png "pspmovie-${VERSION}"/pspmovie.png
+
+tar cf - "pspmovie-${VERSION}" | gzip -c > "pspmovie-${VERSION}.tar.gz"
+
+if (!(-f "pspmovie-${VERSION}.tar.gz")) then
+	echo "Something fcked up: pspmovie-${VERSION}.tar.gz doesn't created"
+	exit(-1)
+endif
+
+/bin/rm -rf "pspmovie-${VERSION}"

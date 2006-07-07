@@ -1,0 +1,9 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=PSPMovie
+Comment=PSP Movie encoder
+Exec=pspmovie
+Icon=pspmovie.png
+Terminal=false
+Type=Application
+Categories=Application;AudioVideo;
