@@ -241,18 +241,10 @@ static int video_global_header = 0;
 
 static int rate_emu = 0;
 
-#ifdef CONFIG_BKTR
-static char *video_grab_format = "bktr";
-#else
-static char *video_grab_format = "video4linux";
-#endif
-static char *video_device = NULL;
 static char *grab_device = NULL;
 static int  video_channel = 0;
 static char *video_standard = "ntsc";
 
-static char *audio_grab_format = "audio_device";
-static char *audio_device = NULL;
 static int audio_volume = 256;
 
 static int using_stdin = 0;
@@ -2128,8 +2120,7 @@ static void opt_input_file(const char *filename)
     /* open the input file with generic libav function */
     err = av_open_input_file(&ic, filename, file_iformat, 0, ap);
     if (err < 0) {
-        print_error(filename, err);
-        exit(1);
+        return;
     }
 
     if(genpts)
@@ -2140,7 +2131,7 @@ static void opt_input_file(const char *filename)
     ret = av_find_stream_info(ic);
     if (ret < 0 && verbose >= 0) {
         fprintf(stderr, "%s: could not find codec parameters\n", filename);
-        exit(1);
+        return;
     }
 
     timestamp = start_time;
@@ -2244,12 +2235,6 @@ static void opt_input_file(const char *filename)
     video_channel = 0;
 
     rate_emu = 0;
-}
-
-static void opt_grab(const char *arg)
-{
-    file_iformat = av_find_input_format(arg);
-    opt_input_file("");
 }
 
 static void check_audio_video_inputs(int *has_video_ptr, int *has_audio_ptr)
@@ -2571,7 +2556,7 @@ static void opt_output_file(const char *filename)
         if (!file_oformat) {
             fprintf(stderr, "Unable for find a suitable output format for '%s'\n",
                     filename);
-            exit(1);
+            return;
         }
     }
 
@@ -2584,7 +2569,7 @@ static void opt_output_file(const char *filename)
            parameters from ffserver */
         if (read_ffserver_streams(oc, filename) < 0) {
             fprintf(stderr, "Could not read stream parameters from '%s'\n", filename);
-            exit(1);
+            return;
         }
     } else {
         use_video = file_oformat->video_codec != CODEC_ID_NONE || video_stream_copy || video_codec_id != CODEC_ID_NONE;
@@ -2618,7 +2603,7 @@ static void opt_output_file(const char *filename)
 
         if (!oc->nb_streams) {
             fprintf(stderr, "No audio or video streams available\n");
-            exit(1);
+            return;
         }
 
         oc->timestamp = rec_timestamp;
@@ -2635,42 +2620,11 @@ static void opt_output_file(const char *filename)
 
     output_files[nb_output_files++] = oc;
 
-    /* check filename in case of an image number is expected */
-    if (oc->oformat->flags & AVFMT_NEEDNUMBER) {
-        if (filename_number_test(oc->filename) < 0) {
-            print_error(oc->filename, AVERROR_NUMEXPECTED);
-            exit(1);
-        }
-    }
-
     if (!(oc->oformat->flags & AVFMT_NOFILE)) {
-        /* test if it already exists to avoid loosing precious files */
-        if (!file_overwrite &&
-            (strchr(filename, ':') == NULL ||
-             strstart(filename, "file:", NULL))) {
-            if (url_exist(filename)) {
-                int c;
-
-                if ( !using_stdin ) {
-                    fprintf(stderr,"File '%s' already exists. Overwrite ? [y/N] ", filename);
-                    fflush(stderr);
-                    c = getchar();
-                    if (toupper(c) != 'Y') {
-                        fprintf(stderr, "Not overwriting - exiting\n");
-                        exit(1);
-                    }
-                                }
-                                else {
-                    fprintf(stderr,"File '%s' already exists. Exiting.\n", filename);
-                    exit(1);
-                                }
-            }
-        }
-
         /* open the file */
         if (url_fopen(&oc->pb, filename, URL_WRONLY) < 0) {
             fprintf(stderr, "Could not open '%s'\n", filename);
-            exit(1);
+            return;
         }
     }
 
@@ -2679,7 +2633,7 @@ static void opt_output_file(const char *filename)
     if (av_set_parameters(oc, ap) < 0) {
         fprintf(stderr, "%s: Invalid encoding parameters\n",
                 oc->filename);
-        exit(1);
+        return;
     }
 
     oc->packet_size= mux_packet_size;
@@ -2694,98 +2648,6 @@ static void opt_output_file(const char *filename)
     image_format = NULL;
 }
 
-/* prepare dummy protocols for grab */
-static void prepare_grab(void)
-{
-    int has_video, has_audio, i, j;
-    AVFormatContext *oc;
-    AVFormatContext *ic;
-    AVFormatParameters vp1, *vp = &vp1;
-    AVFormatParameters ap1, *ap = &ap1;
-
-    /* see if audio/video inputs are needed */
-    has_video = 0;
-    has_audio = 0;
-    memset(ap, 0, sizeof(*ap));
-    memset(vp, 0, sizeof(*vp));
-    vp->time_base.num= 1;
-    for(j=0;j<nb_output_files;j++) {
-        oc = output_files[j];
-        for(i=0;i<oc->nb_streams;i++) {
-            AVCodecContext *enc = oc->streams[i]->codec;
-            switch(enc->codec_type) {
-            case CODEC_TYPE_AUDIO:
-                if (enc->sample_rate > ap->sample_rate)
-                    ap->sample_rate = enc->sample_rate;
-                if (enc->channels > ap->channels)
-                    ap->channels = enc->channels;
-                has_audio = 1;
-                break;
-            case CODEC_TYPE_VIDEO:
-                if (enc->width > vp->width)
-                    vp->width = enc->width;
-                if (enc->height > vp->height)
-                    vp->height = enc->height;
-
-                if (vp->time_base.num*(int64_t)enc->time_base.den > enc->time_base.num*(int64_t)vp->time_base.den){
-                    vp->time_base = enc->time_base;
-                }
-                has_video = 1;
-                break;
-            default:
-                av_abort();
-            }
-        }
-    }
-
-    if (has_video == 0 && has_audio == 0) {
-        fprintf(stderr, "Output file must have at least one audio or video stream\n");
-        exit(1);
-    }
-
-    if (has_video) {
-        AVInputFormat *fmt1;
-        fmt1 = av_find_input_format(video_grab_format);
-        vp->device  = video_device;
-        vp->channel = video_channel;
-        vp->standard = video_standard;
-        vp->pix_fmt = frame_pix_fmt;
-        if (av_open_input_file(&ic, "", fmt1, 0, vp) < 0) {
-            fprintf(stderr, "Could not find video grab device\n");
-            exit(1);
-        }
-        /* If not enough info to get the stream parameters, we decode the
-           first frames to get it. */
-        if ((ic->ctx_flags & AVFMTCTX_NOHEADER) && av_find_stream_info(ic) < 0) {
-            fprintf(stderr, "Could not find video grab parameters\n");
-            exit(1);
-        }
-        /* by now video grab has one stream */
-        ic->streams[0]->r_frame_rate.num = vp->time_base.den;
-        ic->streams[0]->r_frame_rate.den = vp->time_base.num;
-        input_files[nb_input_files] = ic;
-
-        if (verbose >= 0)
-            dump_format(ic, nb_input_files, "", 0);
-
-        nb_input_files++;
-    }
-    if (has_audio && audio_grab_format) {
-        AVInputFormat *fmt1;
-        fmt1 = av_find_input_format(audio_grab_format);
-        ap->device = audio_device;
-        if (av_open_input_file(&ic, "", fmt1, 0, ap) < 0) {
-            fprintf(stderr, "Could not find audio grab device\n");
-            exit(1);
-        }
-        input_files[nb_input_files] = ic;
-
-        if (verbose >= 0)
-            dump_format(ic, nb_input_files, "", 0);
-
-        nb_input_files++;
-    }
-}
 
 #if defined(CONFIG_WIN32) || defined(CONFIG_OS2)
 static int64_t getutime(void)

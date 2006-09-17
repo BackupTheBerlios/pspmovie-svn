@@ -19,6 +19,7 @@
 #include "ffmpeg/avformat.h"
 #include "ffmpeg/avcodec.h"
 
+int GetMP4Title(const char *file, char *title_buf);
 
 class CAVInfo {
 		bool m_have_vstream, m_have_astream;

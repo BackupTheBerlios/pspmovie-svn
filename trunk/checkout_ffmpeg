@@ -6,11 +6,11 @@
 # with release version of xvidcore.
 #
 
-cvs -z9 -d:pserver:anonymous@mplayerhq.hu:/cvsroot/ffmpeg co ffmpeg
+svn checkout svn://svn.mplayerhq.hu/ffmpeg/trunk ffmpeg
 
 cd ffmpeg
 
-./configure --disable-ffplay --disable-ffserver --disable-v4l --enable-gpl --enable-a52 --enable-faad
+./configure --disable-ffplay --disable-ffserver --disable-v4l --enable-gpl --enable-a52 --enable-faad --enable-faac
 
 make
 

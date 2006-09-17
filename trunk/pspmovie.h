@@ -13,16 +13,7 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA
 //
 
-#ifndef JOBCONTROL_H_
-#define JOBCONTROL_H_
-
-#include <qobject.h>
-#include <qprocess.h>
-#include <qsettings.h>
-
-QString CastToXBytes(unsigned long size);
-
-#include "avutils.h"
+class  CFFmpeg_Glue;
 
 class CTranscode {
 		// user choices from gui
@@ -72,66 +63,34 @@ class CTranscode {
 		const QString Target();
 };
 
-class CJobQueue {
-		CFFmpeg_Glue m_ffmpeg;
-		
-		std::list<CTranscode> m_queue;
-		
-		int m_total_frames;
-		
-		bool m_is_aborted;
-		
-		//
-		// in frames
-		int m_update_interval, m_update_countdown;
-		time_t m_last_update;
-		
-		static int UpdateTranscodeProgress(void *This, int frame);
-	public:
-		CJobQueue();
-		
-		bool Add(CTranscode &job);
-		bool Remove(int job_id);
-		
-		CTranscode *NextJob()
-		{ 
-			return IsEmpty() ? 0 : &m_queue.front();
-		}
-		
-		bool Start();
-		bool Abort();
-		
-		bool IsEmpty() { return m_queue.empty(); }
-		
-		
-};
-
 class CPSPMovie {
 		int m_id;
 		static int s_next_id;
 		
 		unsigned long m_size;
 		bool m_have_thumbnail;
-		QString m_thmb_name, m_movie_name;
+		QString m_thmb_name, m_movie_name, m_movie_title;
 		QDir m_dir;
 		QString m_str_size;
 		bool DoCopy(QWidget *parent, const QString &source, const QString &target);
 
 		QImage m_icon;
 	public:
-		CPSPMovie(QFileInfo *info);
+		CPSPMovie(const QFileInfo &info);
 		
 		CPSPMovie() {  /* for stl */ }
 		
-		bool TransferTo(QWidget *parent, const QString &target_dir, int trg_idx);
+		bool TransferTo(QWidget *parent, const QString &target_dir, int trg_idx = -1);
 		bool Delete();
 		
 		const QString &Name() { return m_movie_name; };
 		const QString &Size() { return m_str_size; };
+		const QString &Title() { return m_movie_title; }
+		//const QString &Title() { return m_movie_name; }
 		
 		int Id() { return m_id; }
 		
-		QImage &Icon() { return m_icon; }
+		const QImage &Icon() { return m_icon; }
 };
 
 class CPSPMovieLocalList {
@@ -149,8 +108,6 @@ class CPSPMovieLocalList {
 		bool TransferPSP(QWidget *parent, int id, const QString &base);
 		bool Delete(int id);
 };
-
-extern CJobQueue g_job_queue;
 
 class CAppSettings {
 		QSettings m_settings;
@@ -172,6 +129,6 @@ class CAppSettings {
 		int GetNewOutputNameIdx(const QDir &trg_dir) const;
 			
 };
+
 const CAppSettings *GetAppSettings();
 
-#endif /*JOBCONTROL_H_*/

@@ -1,394 +1,232 @@
-<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
-<class>MainWin</class>
-<widget class="QMainWindow">
-    <property name="name">
-        <cstring>MainWin</cstring>
+<ui version="4.0" >
+ <author></author>
+ <comment></comment>
+ <exportmacro></exportmacro>
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>361</width>
+    <height>287</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>MainWindow</string>
+  </property>
+  <property name="windowIcon" >
+   <iconset resource="pspmovie.qrc" >:/images/sonypsp.png</iconset>
+  </property>
+  <widget class="QWidget" name="centralwidget" >
+   <widget class="QPushButton" name="transcodeButton" >
+    <property name="geometry" >
+     <rect>
+      <x>10</x>
+      <y>0</y>
+      <width>161</width>
+      <height>111</height>
+     </rect>
     </property>
-    <property name="geometry">
-        <rect>
-            <x>0</x>
-            <y>0</y>
-            <width>600</width>
-            <height>445</height>
-        </rect>
+    <property name="contextMenuPolicy" >
+     <enum>Qt::NoContextMenu</enum>
     </property>
-    <property name="sizePolicy">
-        <sizepolicy>
-            <hsizetype>0</hsizetype>
-            <vsizetype>5</vsizetype>
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-        </sizepolicy>
+    <property name="toolTip" >
+     <string>Transcode movie to PSP format</string>
     </property>
-    <property name="minimumSize">
-        <size>
-            <width>21</width>
-            <height>56</height>
-        </size>
+    <property name="statusTip" >
+     <string>Transcode movie to PSP format</string>
     </property>
-    <property name="maximumSize">
-        <size>
-            <width>600</width>
-            <height>32767</height>
-        </size>
+    <property name="icon" >
+     <iconset resource="pspmovie.qrc" >:/mainwin/images/folder_video.png</iconset>
     </property>
-    <property name="caption">
-        <string>PSPMovie</string>
+    <property name="iconSize" >
+     <size>
+      <width>96</width>
+      <height>96</height>
+     </size>
     </property>
-    <property name="icon">
-        <pixmap>sonypsp.png</pixmap>
+   </widget>
+   <widget class="QPushButton" name="xferButton" >
+    <property name="geometry" >
+     <rect>
+      <x>180</x>
+      <y>0</y>
+      <width>161</width>
+      <height>111</height>
+     </rect>
     </property>
-    <property name="dockWindowsMovable">
-        <bool>false</bool>
+    <property name="contextMenuPolicy" >
+     <enum>Qt::NoContextMenu</enum>
     </property>
-    <widget class="QGroupBox">
-        <property name="name">
-            <cstring>groupBox2</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>10</x>
-                <y>160</y>
-                <width>580</width>
-                <height>230</height>
-            </rect>
-        </property>
-        <property name="title">
-            <string>Transcoding queue</string>
-        </property>
-        <widget class="QListView">
-            <column>
-                <property name="text">
-                    <string>Name</string>
-                </property>
-                <property name="clickable">
-                    <bool>true</bool>
-                </property>
-                <property name="resizable">
-                    <bool>true</bool>
-                </property>
-            </column>
-            <column>
-                <property name="text">
-                    <string>Duration</string>
-                </property>
-                <property name="clickable">
-                    <bool>true</bool>
-                </property>
-                <property name="resizable">
-                    <bool>true</bool>
-                </property>
-            </column>
-            <column>
-                <property name="text">
-                    <string>Output stream</string>
-                </property>
-                <property name="clickable">
-                    <bool>true</bool>
-                </property>
-                <property name="resizable">
-                    <bool>true</bool>
-                </property>
-            </column>
-            <property name="name">
-                <cstring>listView_Queue</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>0</x>
-                    <y>30</y>
-                    <width>600</width>
-                    <height>200</height>
-                </rect>
-            </property>
-        </widget>
+    <property name="toolTip" >
+     <string>Exchange movies between PSP and PC</string>
+    </property>
+    <property name="statusTip" >
+     <string>Exchange movies between PSP and PC</string>
+    </property>
+    <property name="icon" >
+     <iconset resource="pspmovie.qrc" >:/mainwin/images/reload.png</iconset>
+    </property>
+    <property name="iconSize" >
+     <size>
+      <width>96</width>
+      <height>96</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QGroupBox" name="groupBox" >
+    <property name="geometry" >
+     <rect>
+      <x>20</x>
+      <y>130</y>
+      <width>321</width>
+      <height>101</height>
+     </rect>
+    </property>
+    <property name="title" >
+     <string>Progress</string>
+    </property>
+    <widget class="QLabel" name="label" >
+     <property name="geometry" >
+      <rect>
+       <x>20</x>
+       <y>50</y>
+       <width>75</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text" >
+      <string>Frames :</string>
+     </property>
     </widget>
-    <widget class="QGroupBox">
-        <property name="name">
-            <cstring>groupBox1</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>10</x>
-                <y>20</y>
-                <width>580</width>
-                <height>130</height>
-            </rect>
-        </property>
-        <property name="title">
-            <string>Now encoding</string>
-        </property>
-        <widget class="QLabel">
-            <property name="name">
-                <cstring>textLabel2</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>11</x>
-                    <y>19</y>
-                    <width>67</width>
-                    <height>21</height>
-                </rect>
-            </property>
-            <property name="minimumSize">
-                <size>
-                    <width>0</width>
-                    <height>20</height>
-                </size>
-            </property>
-            <property name="text">
-                <string>Source file:</string>
-            </property>
-        </widget>
-        <widget class="QProgressBar">
-            <property name="name">
-                <cstring>progressBar_Encode</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>10</x>
-                    <y>60</y>
-                    <width>540</width>
-                    <height>24</height>
-                </rect>
-            </property>
-            <property name="progress">
-                <number>0</number>
-            </property>
-        </widget>
-        <widget class="QLabel">
-            <property name="name">
-                <cstring>textLabel5</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>11</x>
-                    <y>99</y>
-                    <width>80</width>
-                    <height>23</height>
-                </rect>
-            </property>
-            <property name="text">
-                <string>Current frame</string>
-            </property>
-        </widget>
-        <widget class="QLabel">
-            <property name="name">
-                <cstring>textLabel5_2</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>221</x>
-                    <y>99</y>
-                    <width>80</width>
-                    <height>23</height>
-                </rect>
-            </property>
-            <property name="text">
-                <string>Total frames</string>
-            </property>
-        </widget>
-        <widget class="QLCDNumber">
-            <property name="name">
-                <cstring>lCDNumber_Frame</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>97</x>
-                    <y>99</y>
-                    <width>64</width>
-                    <height>23</height>
-                </rect>
-            </property>
-            <property name="acceptDrops">
-                <bool>true</bool>
-            </property>
-            <property name="numDigits">
-                <number>7</number>
-            </property>
-            <property name="segmentStyle">
-                <enum>Flat</enum>
-            </property>
-        </widget>
-        <widget class="QLCDNumber">
-            <property name="name">
-                <cstring>lCDNumber_TotalFrames</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>300</x>
-                    <y>100</y>
-                    <width>64</width>
-                    <height>23</height>
-                </rect>
-            </property>
-            <property name="numDigits">
-                <number>7</number>
-            </property>
-            <property name="segmentStyle">
-                <enum>Flat</enum>
-            </property>
-        </widget>
-        <widget class="QLineEdit">
-            <property name="name">
-                <cstring>lineEdit_CurrFile</cstring>
-            </property>
-            <property name="enabled">
-                <bool>true</bool>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>84</x>
-                    <y>19</y>
-                    <width>485</width>
-                    <height>21</height>
-                </rect>
-            </property>
-            <property name="font">
-                <font>
-                    <bold>1</bold>
-                </font>
-            </property>
-            <property name="readOnly">
-                <bool>true</bool>
-            </property>
-        </widget>
+    <widget class="QLabel" name="label_2" >
+     <property name="geometry" >
+      <rect>
+       <x>160</x>
+       <y>50</y>
+       <width>54</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text" >
+      <string>of total</string>
+     </property>
     </widget>
-</widget>
-<toolbars>
-    <toolbar dock="2">
-        <property name="name">
-            <cstring>Toolbar</cstring>
-        </property>
-        <property name="enabled">
-            <bool>true</bool>
-        </property>
-        <property name="label">
-            <string>Toolbar</string>
-        </property>
-        <action name="ActionNewJob"/>
-        <action name="ActionStart"/>
-        <action name="ActionAbort"/>
-        <action name="ActionRemoveJob"/>
-        <separator/>
-        <action name="ActionXfer"/>
-        <separator/>
-    </toolbar>
-</toolbars>
-<actions>
-    <action>
-        <property name="name">
-            <cstring>ActionNewJob</cstring>
-        </property>
-        <property name="iconSet">
-            <iconset>stock_insert-slide.png</iconset>
-        </property>
-        <property name="text">
-            <string>New job</string>
-        </property>
-        <property name="toolTip">
-            <string>New job</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>ActionStart</cstring>
-        </property>
-        <property name="iconSet">
-            <iconset>stock_tools-macro.png</iconset>
-        </property>
-        <property name="text">
-            <string>Start transcoding</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>ActionAbort</cstring>
-        </property>
-        <property name="enabled">
-            <bool>false</bool>
-        </property>
-        <property name="iconSet">
-            <iconset>stock_stop.png</iconset>
-        </property>
-        <property name="text">
-            <string>Stop</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>ActionRemoveJob</cstring>
-        </property>
-        <property name="iconSet">
-            <iconset>stock_calc-cancel.png</iconset>
-        </property>
-        <property name="text">
-            <string>Remove job</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>ActionXfer</cstring>
-        </property>
-        <property name="iconSet">
-            <iconset>stock_refresh.png</iconset>
-        </property>
-        <property name="text">
-            <string>Action</string>
-        </property>
-    </action>
-</actions>
-<connections>
-    <connection>
-        <sender>ActionNewJob</sender>
-        <signal>activated()</signal>
-        <receiver>MainWin</receiver>
-        <slot>newJob()</slot>
-    </connection>
-    <connection>
-        <sender>ActionStart</sender>
-        <signal>activated()</signal>
-        <receiver>MainWin</receiver>
-        <slot>startQueue()</slot>
-    </connection>
-    <connection>
-        <sender>ActionAbort</sender>
-        <signal>activated()</signal>
-        <receiver>MainWin</receiver>
-        <slot>abortQueue()</slot>
-    </connection>
-    <connection>
-        <sender>ActionRemoveJob</sender>
-        <signal>activated()</signal>
-        <receiver>MainWin</receiver>
-        <slot>deleteQueue()</slot>
-    </connection>
-    <connection>
-        <sender>ActionXfer</sender>
-        <signal>activated()</signal>
-        <receiver>MainWin</receiver>
-        <slot>startXfer()</slot>
-    </connection>
-</connections>
-<includes>
-    <include location="local" impldecl="in implementation">mainwin.ui.h</include>
-</includes>
-<variables>
-    <variable access="public">class XferWin *m_xfer_win;</variable>
-</variables>
-<slots>
-    <slot>newJob()</slot>
-    <slot>removeFromQueue( int id )</slot>
-    <slot>startQueue()</slot>
-    <slot>abortQueue()</slot>
-    <slot>deleteQueue()</slot>
-    <slot>startXfer()</slot>
-</slots>
-<functions>
-    <function specifier="non virtual">enableStart( bool enable )</function>
-    <function specifier="non virtual">updateProgress( int percent, int frame )</function>
-    <function access="protected">init()</function>
-</functions>
-<pixmapinproject/>
-<layoutdefaults spacing="6" margin="11"/>
-</UI>
+    <widget class="QLCDNumber" name="lcdNumberFrames" >
+     <property name="geometry" >
+      <rect>
+       <x>80</x>
+       <y>50</y>
+       <width>64</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="numDigits" >
+      <number>7</number>
+     </property>
+     <property name="segmentStyle" >
+      <enum>QLCDNumber::Filled</enum>
+     </property>
+     <property name="value" stdset="0" >
+      <double>900000</double>
+     </property>
+     <property name="intValue" stdset="0" >
+      <number>900000</number>
+     </property>
+    </widget>
+    <widget class="QLCDNumber" name="lcdNumberFramesTotal" >
+     <property name="geometry" >
+      <rect>
+       <x>210</x>
+       <y>50</y>
+       <width>64</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="numDigits" >
+      <number>7</number>
+     </property>
+     <property name="segmentStyle" >
+      <enum>QLCDNumber::Filled</enum>
+     </property>
+     <property name="value" stdset="0" >
+      <double>900000</double>
+     </property>
+     <property name="intValue" stdset="0" >
+      <number>900000</number>
+     </property>
+    </widget>
+    <widget class="QProgressBar" name="progressBar" >
+     <property name="geometry" >
+      <rect>
+       <x>20</x>
+       <y>20</y>
+       <width>251</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="value" >
+      <number>24</number>
+     </property>
+     <property name="orientation" >
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar" >
+   <property name="geometry" >
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>361</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuHelp" >
+    <property name="title" >
+     <string>Help</string>
+    </property>
+    <addaction name="action_About" />
+   </widget>
+   <widget class="QMenu" name="menu_File" >
+    <property name="title" >
+     <string>&amp;File</string>
+    </property>
+    <addaction name="actionTranscode" />
+    <addaction name="actionTransfer" />
+    <addaction name="separator" />
+    <addaction name="actionE_xit" />
+   </widget>
+   <addaction name="menu_File" />
+   <addaction name="menuHelp" />
+  </widget>
+  <widget class="QStatusBar" name="statusbar" />
+  <action name="actionTranscode" >
+   <property name="text" >
+    <string>&amp;Transcode</string>
+   </property>
+  </action>
+  <action name="actionTransfer" >
+   <property name="text" >
+    <string>T&amp;ransfer</string>
+   </property>
+  </action>
+  <action name="action_About" >
+   <property name="text" >
+    <string>&amp;About</string>
+   </property>
+  </action>
+  <action name="actionE_xit" >
+   <property name="text" >
+    <string>E&amp;xit</string>
+   </property>
+  </action>
+ </widget>
+ <pixmapfunction></pixmapfunction>
+ <resources>
+  <include location="pspmovie.qrc" />
+ </resources>
+ <connections/>
+</ui>

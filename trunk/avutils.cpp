@@ -40,7 +40,12 @@ typedef uint64_t u_int64_t;
 
 bool CanDoPSP()
 {
-	if ( !avcodec_find_encoder(CODEC_ID_AAC) || !avcodec_find_encoder(CODEC_ID_MPEG4)) {
+	if ( !avcodec_find_encoder(CODEC_ID_AAC) ) {
+		printf("ERROR: CODEC_ID_AAC missing\n");
+		return false;
+	}
+	if ( !avcodec_find_encoder(CODEC_ID_MPEG4) ) {
+		printf("ERROR: CODEC_ID_MPEG4 missing\n");
 		return false;
 	}
 	AVOutputFormat *fmt = guess_format("psp", 0, 0);
@@ -268,8 +273,31 @@ int MP4_moov_uuid_parse(uint8_t *uuid_data, uint32_t data_len, char *title)
 	return 1;
 }
 
+int GetMP4Title(const char *file, char *title_buf)
+{
+	MP4FileHandle mp4File = MP4Read(file, MP4_DETAILS_ERROR);
+	if ( !mp4File ) {
+		printf("ERROR: GetMP4Title cant open [%s]\n", file);
+		return 0;
+	}
+	uint32_t vsize;
+	uint8_t *value;
+	char *pname = "moov.uuid.data";
+
+	MP4GetBytesProperty(mp4File, pname, &value, &vsize);
+	if ( vsize ) {
+		MP4_moov_uuid_parse(value, vsize, title_buf);
+		free(value);
+	}
+	MP4Close(mp4File);
+	
+	return vsize;
+}
+
+
 void CAVInfo::ReadMP4(const char *file)
 {
+	/*
 	MP4FileHandle mp4File = MP4Read(file, MP4_DETAILS_ERROR);
 	if ( !mp4File ) {
 		return;
@@ -284,6 +312,8 @@ void CAVInfo::ReadMP4(const char *file)
 		free(value);
 	}
 	MP4Close(mp4File);
+	*/
+	GetMP4Title(file, m_title);
 }
 
 CFFmpeg_Glue::CFFmpeg_Glue()

@@ -1,0 +1,24 @@
+<RCC>
+    <qresource prefix="/" >
+        <file>images/cancel.png</file>
+        <file>images/ok.png</file>
+        <file>images/sonypsp.png</file>
+        <file>images/stock_calc-cancel.png</file>
+        <file>images/stock_close.png</file>
+        <file>images/stock_data-undo.png</file>
+        <file>images/stock_down.png</file>
+        <file>images/stock_insert-slide.png</file>
+        <file>images/stock_left.png</file>
+        <file>images/stock_open.png</file>
+        <file>images/stock_refresh.png</file>
+        <file>images/stock_right.png</file>
+        <file>images/stock_stop.png</file>
+        <file>images/stock_tools-macro.png</file>
+        <file>images/stock_up.png</file>
+        <file>images/stock_view-details-16.png</file>
+    </qresource>
+    <qresource prefix="/mainwin" >
+        <file>images/folder_video.png</file>
+        <file>images/reload.png</file>
+    </qresource>
+</RCC>
