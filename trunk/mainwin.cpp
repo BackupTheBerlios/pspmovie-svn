@@ -42,13 +42,15 @@ void MainWindow::on_transcodeButton_clicked()
 	ui.lcdNumberFramesTotal->display(m_current_job->TotalFrames());
 	ui.lcdNumberFrames->display(0);
 	ui.progressBar->setValue(0);
+	m_last_update_frame = 0, m_last_update_time = time(0);
 	
 	job->RunTranscode(*m_ffmpeg, UpdateTranscodeProgress, this);
 
 	ui.lcdNumberFrames->display(0);
 	ui.lcdNumberFramesTotal->display(0);
 	ui.progressBar->setValue(0);
-
+	m_last_update_frame = 0, m_last_update_time = time(0);
+	
 	delete m_current_job;
 	m_current_job = 0;
 }
@@ -56,10 +58,15 @@ void MainWindow::on_transcodeButton_clicked()
 int MainWindow::UpdateTranscodeProgress(void *p, int num_of_frames_done)
 {
 	MainWindow *This = (MainWindow *)p;
+	num_of_frames_done /= 2;
 	//printf("this=%p, progress=%d of %d\r", This, progress, This->m_current_job->TotalFrames());
-	This->ui.progressBar->setValue(num_of_frames_done*50/This->m_current_job->TotalFrames());
-	This->ui.lcdNumberFrames->display(num_of_frames_done/2);
-	qApp->processEvents();
+	if ( ((num_of_frames_done - This->m_last_update_frame) > 100) || ((time(0) - This->m_last_update_time) > 0) ) { 
+		This->ui.progressBar->setValue(num_of_frames_done*100/This->m_current_job->TotalFrames());
+		This->ui.lcdNumberFrames->display(num_of_frames_done);
+		This->m_last_update_frame = num_of_frames_done;
+		qApp->processEvents();
+		This->m_last_update_time = time(0);
+	}
 	
 	return !This->m_stop_transcode;
 }

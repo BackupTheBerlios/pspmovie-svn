@@ -19,6 +19,7 @@ class MainWindow : public QMainWindow {
     private:
 		Ui::MainWindow ui;
 		bool m_stop_transcode;
+		int m_last_update_frame, m_last_update_time;
 		
 		CFFmpeg_Glue *m_ffmpeg;
 
