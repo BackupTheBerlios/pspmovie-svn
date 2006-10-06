@@ -237,7 +237,9 @@ int MP4_moov_uuid_parse(uint8_t *uuid_data, uint32_t data_len, char *title)
 	}
 	data += sizeof(uint32_t);
 	//printf("tag = %08lx\n", tag);
-	if ( read_be16(data) != 0x0001 ) {
+	uint16_t tag16 = read_be16(data);
+	if ( (tag16 != 0x0001) &&  (tag16 != 0x0004) ) {
+		printf("tag16 = %04x\n", tag16);
 		return 0;
 	}
 	data += sizeof(uint16_t);
@@ -286,7 +288,9 @@ int GetMP4Title(const char *file, char *title_buf)
 
 	MP4GetBytesProperty(mp4File, pname, &value, &vsize);
 	if ( vsize ) {
-		MP4_moov_uuid_parse(value, vsize, title_buf);
+		if ( !MP4_moov_uuid_parse(value, vsize, title_buf) ) {
+			title_buf[0] = 0;
+		}
 		free(value);
 	}
 	MP4Close(mp4File);

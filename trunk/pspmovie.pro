@@ -21,6 +21,6 @@ RESOURCES	= pspmovie.qrc
 
 INCLUDEPATH += ffmpeg ffmpeg/libavformat ffmpeg/libavcodec ffmpeg/libavutil
 
-unix:LIBS	+= -lhal -lhal-storage ffmpeg/libavformat/libavformat.a ffmpeg/libavcodec/libavcodec.a ffmpeg/libavutil/libavutil.a -lmp4v2 -lfaad -lfaac
+unix:LIBS	+= -lhal -lhal-storage ffmpeg/libavformat/libavformat.a ffmpeg/libavcodec/libavcodec.a ffmpeg/libavutil/libavutil.a -lmp4v2 -lfaad -lfaac -lxvidcore
 
 unix:INCLUDEPATH	+= . /usr/include/hal /usr/include/dbus-1.0/ /usr/lib/dbus-1.0/include/

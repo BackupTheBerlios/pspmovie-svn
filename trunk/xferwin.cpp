@@ -11,6 +11,10 @@ class XferListItem : public QTableWidgetItem {
 		{
 			m_data = data;
 		}
+		~XferListItem()
+		{
+			//printf("Deleted item %p\n", this);
+		}
 };
 
 void FillListControl(CPSPMovieLocalList *file_list, QTableWidget *list)
@@ -37,11 +41,11 @@ void FillListControl(CPSPMovieLocalList *file_list, QTableWidget *list)
         list->insertRow(row);
 
         QTableWidgetItem *it = new XferListItem(&m);
-        printf("New item = %p\n", it);
+        //printf("New item = %p, name %s\n", it, (const char *)(m.Title().toUtf8()));
         if ( !m.Icon().isNull() ) {
 	        it->setIcon(QPixmap::fromImage(m.Icon()));
-	        list->setItem(row, 0, it);
         }
+        list->setItem(row, 0, it);
 
         list->setItem(row, 1, new QTableWidgetItem(m.Title()));
         
@@ -88,15 +92,12 @@ void XferDialog::RefreshLocal()
 
 void XferDialog::on_topspButton_clicked()
 {
-	QList<QTableWidgetItem *> selitems = ui.localList->selectedItems();
-	if ( !selitems.empty() ) {
-		for(QList<QTableWidgetItem *>::iterator i = selitems.begin(); i != selitems.end(); i++) {
-			if ( (*i)->type() == (QTableWidgetItem::UserType+1) ) {
-				XferListItem *it = (XferListItem *)(*i);
-				printf("zhopaPSP [%s]\n", (const char *)it->m_data->Name().toUtf8());
-
-				m_local_file_list->TransferPSP(this, it->m_data->Id(), m_psp_dir);
-			}
+	for(int j = 0; j < ui.localList->rowCount();j++) {
+		if ( ui.localList->isItemSelected(ui.localList->item(j, 1)) ) {
+			XferListItem *it = (XferListItem *)ui.localList->item(j, 0);
+			printf("\tSelected Item at %d = %p  type %d\n",	j, it, it->type());
+			printf("zhopaPSP [%s]\n", (const char *)it->m_data->Name().toUtf8());
+			m_local_file_list->TransferPSP(this, it->m_data->Id(), m_psp_dir);
 		}
 	}
 	RefreshPSP();
@@ -110,8 +111,7 @@ void XferDialog::on_topcButton_clicked()
 			if ( (*i)->type() == (QTableWidgetItem::UserType+1) ) {
 				XferListItem *it = (XferListItem *)(*i);
 				printf("zhopaPC [%s]\n", (const char *)it->m_data->Name().toUtf8());
-
-				m_psp_file_list->Transfer(this, it->m_data->Id(), GetAppSettings()->TargetDir().path());
+				//m_psp_file_list->Transfer(this, it->m_data->Id(), GetAppSettings()->TargetDir().path());
 			}
 		}
 	}

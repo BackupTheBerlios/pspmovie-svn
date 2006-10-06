@@ -45,7 +45,8 @@ void MainWindow::on_transcodeButton_clicked()
 	m_last_update_frame = 0, m_last_update_time = time(0);
 	
 	job->RunTranscode(*m_ffmpeg, UpdateTranscodeProgress, this);
-
+	job->RunThumbnail(*m_ffmpeg);
+	
 	ui.lcdNumberFrames->display(0);
 	ui.lcdNumberFramesTotal->display(0);
 	ui.progressBar->setValue(0);

@@ -325,24 +325,27 @@ bool CPSPMovieLocalList::TransferPSP(QWidget *parent, int id, const QString &bas
 
 	QDir trg_dir_backup(mp_root.filePath("100MNV01_BACK"));
 	if ( trg_dir.exists() ) {
-	  printf("DEBUG: rename orig dir [%s] -> [%s]\n", (const char *)trg_dir.path().toUtf8(),
-	  	(const char *)trg_dir_backup.path().toUtf8());
+	  //printf("DEBUG: rename orig dir [%s] -> [%s]\n", (const char *)trg_dir.path().toUtf8(),
+	  //	(const char *)trg_dir_backup.path().toUtf8());
 	  if ( !trg_dir.rename(trg_dir.path(), trg_dir_backup.path()) ) {
+	  	// FIXME:
 	    printf("DEBUG: dir failed rename\n");
 	  }
 	}
 	trg_dir = QDir(mp_root.filePath("100MNV01"));
 	sync();
 	if ( !trg_dir.exists() ) {
-	    printf("DEBUG: dir doesn't exist - will create\n");
+	    //printf("DEBUG: dir doesn't exist - will create\n");
 		if ( !trg_dir.mkpath(trg_dir.path()) ) {
-		    printf("DEBUG: dir failed create\n");
+			// FIXME:
+		    //printf("DEBUG: dir failed create\n");
 			return false;
 		}
 	}
 	printf("DEBUG: transferring [%s] -> [%s]\n", (const char *)m.Name().toUtf8(), (const char *)trg_dir.path().toUtf8());
 	if ( !m.TransferTo(parent, trg_dir.path(), free_idx) ) {
-	  	printf("DEBUG: transfer failed\n");
+		// FIXME:
+	  	//printf("DEBUG: transfer failed\n");
 		return false;
 	}
 	printf("Checking backup dir [%s]\n", (const char *)trg_dir_backup.path().toUtf8());
@@ -351,19 +354,18 @@ bool CPSPMovieLocalList::TransferPSP(QWidget *parent, int id, const QString &bas
 		for(QList<QFileInfo>::const_iterator it = files.begin(); it != files.end(); it++) {
 			QString backup_src(it->filePath());
 			QString backup_dst(trg_dir.filePath(it->fileName().toUpper()));
-			printf("DEBUG: moving [%s] -> [%s]\n", (const char *)backup_src.toUtf8(), (const char *)backup_dst.toUtf8());
+			//printf("DEBUG: moving [%s] -> [%s]\n", (const char *)backup_src.toUtf8(), (const char *)backup_dst.toUtf8());
 			if ( !QFile::rename(backup_src, backup_dst) ) {
+				// FIXME:
 				printf("OOps - rename failed: orig %s exists, target dir %s exists\n",
 					QFile::exists(backup_src) ? "-" : "doesn't", trg_dir.exists() ? "-" : "doesn't");
-//				if ( rename((const char *)backup_src.toUtf8(), (const char *)backup_dst.toUtf8()) ) {
-//					perror("rename");
-//				}
 			}
 			sync();
 		}
 		
-		printf("Will remove [%s]\n", (const char *)trg_dir_backup.path().toUtf8());
+		//printf("Will remove [%s]\n", (const char *)trg_dir_backup.path().toUtf8());
 		if  ( !trg_dir_backup.rmdir(trg_dir_backup.path()) ) {
+			// FIXME:
 			printf("remove failed\n");
 		}
 		sync();
