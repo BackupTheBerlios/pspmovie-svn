@@ -238,11 +238,25 @@ int MP4_moov_uuid_parse(uint8_t *uuid_data, uint32_t data_len, char *title)
 	data += sizeof(uint32_t);
 	//printf("tag = %08lx\n", tag);
 	uint16_t tag16 = read_be16(data);
-	if ( (tag16 != 0x0001) &&  (tag16 != 0x0004) ) {
-		printf("tag16 = %04x\n", tag16);
-		return 0;
+//	if ( (tag16 != 0x0001) &&  (tag16 != 0x0004) ) {
+//		printf("tag16 = %04x\n", tag16);
+//		return 0;
+//	}
+
+	//
+	// That's weirdiness of ffmpeg lib
+	//
+	switch (tag16) {
+		case 0x0001:
+			data += sizeof(uint16_t);
+			break;
+		case 0x0004:
+			data += 24*sizeof(uint16_t);
+			break;
+		default:
+			return 0;
 	}
-	data += sizeof(uint16_t);
+	
 	uint16_t title_len = (read_be16(data) - 10) / 2;
 	data += sizeof(uint16_t);
 

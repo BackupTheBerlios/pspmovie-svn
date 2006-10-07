@@ -17,6 +17,7 @@ MainWindow::MainWindow(CFFmpeg_Glue *gl) : QMainWindow(0)
 	ui.lcdNumberFrames->display(0);
 	ui.lcdNumberFramesTotal->display(0);
 	ui.progressBar->setValue(0);
+	m_current_job = 0;
 }
 
 MainWindow::~MainWindow()
@@ -25,6 +26,17 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_transcodeButton_clicked()
 {
+	//
+	// Check if transcode already running, so it's "Cancel" click
+	//
+	if ( m_current_job ) {
+		if ( QMessageBox::question(this, "PSPMovie", tr("Abort transcoding ?"),
+				QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes ) {
+			m_stop_transcode = true;
+		}
+		return;		
+	}
+	
 	TranscodeDialog dlg;
 	if ( !dlg.exec() ) {
 		return;
@@ -44,6 +56,10 @@ void MainWindow::on_transcodeButton_clicked()
 	ui.progressBar->setValue(0);
 	m_last_update_frame = 0, m_last_update_time = time(0);
 	
+	ui.transcodeButton->setIcon(QPixmap(":/mainwin/images/cancel.png").scaled(64,64));
+	ui.transcodeButton->setToolTip(tr("Stop transcoding"));
+	ui.transcodeButton->setStatusTip(tr("Stop transcoding"));
+	
 	job->RunTranscode(*m_ffmpeg, UpdateTranscodeProgress, this);
 	job->RunThumbnail(*m_ffmpeg);
 	
@@ -54,6 +70,9 @@ void MainWindow::on_transcodeButton_clicked()
 	
 	delete m_current_job;
 	m_current_job = 0;
+	ui.transcodeButton->setIcon(QPixmap(":/mainwin/images/folder_video.png").scaled(128,128));
+	ui.transcodeButton->setToolTip(tr("Transcode movie to PSP format"));
+	ui.transcodeButton->setStatusTip(tr("Transcode movie to PSP format"));
 }
 
 int MainWindow::UpdateTranscodeProgress(void *p, int num_of_frames_done)
@@ -102,5 +121,4 @@ void MainWindow::closeEvent(QCloseEvent * event)
 			m_stop_transcode = true;
 		}
 	}
-	//return false;
 }
