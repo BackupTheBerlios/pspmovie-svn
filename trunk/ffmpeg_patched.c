@@ -302,7 +302,6 @@ static struct termios oldtty;
 
 static void term_exit(void)
 {
-    tcsetattr (0, TCSANOW, &oldtty);
 }
 
 static volatile sig_atomic_t received_sigterm = 0;
