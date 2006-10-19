@@ -316,56 +316,11 @@ sigterm_handler(int sig)
 
 static void term_init(void)
 {
-    struct termios tty;
-
-    tcgetattr (0, &tty);
-    oldtty = tty;
-
-    tty.c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP
-                          |INLCR|IGNCR|ICRNL|IXON);
-    tty.c_oflag |= OPOST;
-    tty.c_lflag &= ~(ECHO|ECHONL|ICANON|IEXTEN);
-    tty.c_cflag &= ~(CSIZE|PARENB);
-    tty.c_cflag |= CS8;
-    tty.c_cc[VMIN] = 1;
-    tty.c_cc[VTIME] = 0;
-
-    tcsetattr (0, TCSANOW, &tty);
-
-    signal(SIGINT , sigterm_handler); /* Interrupt (ANSI).  */
-    signal(SIGQUIT, sigterm_handler); /* Quit (POSIX).  */
-    signal(SIGTERM, sigterm_handler); /* Termination (ANSI).  */
-    /*
-    register a function to be called at normal program termination
-    */
-    atexit(term_exit);
-#ifdef CONFIG_BEOS_NETSERVER
-    fcntl(0, F_SETFL, fcntl(0, F_GETFL) | O_NONBLOCK);
-#endif
 }
 
 /* read a key without blocking */
 static int read_key(void)
 {
-    int n = 1;
-    unsigned char ch;
-#ifndef CONFIG_BEOS_NETSERVER
-    struct timeval tv;
-    fd_set rfds;
-
-    FD_ZERO(&rfds);
-    FD_SET(0, &rfds);
-    tv.tv_sec = 0;
-    tv.tv_usec = 0;
-    n = select(1, &rfds, NULL, NULL, &tv);
-#endif
-    if (n > 0) {
-        n = read(0, &ch, 1);
-        if (n == 1)
-            return ch;
-
-        return n;
-    }
     return -1;
 }
 
@@ -3868,6 +3823,9 @@ int ffmpeg_do_transcode(char *in_file, char *out_file, int avitrate, int vbitrat
         str_title = title;
         opt_output_file(out_file);
 
+	// prevent opening stdin
+	using_stdin = 1;
+	
     av_encode(output_files, nb_output_files, input_files, nb_input_files,
               stream_maps, nb_stream_maps);
 
