@@ -49,7 +49,7 @@ CTranscode::CTranscode(QString &src, uint32_t thumbnail_time,
 		QString short_path = fi.absoluteDir().path().left(40) + QDir::convertSeparators(".../");
 		QString short_name = fi.fileName();
 		if ( fi.fileName().length() > 20 ) {
-			short_name = fi.baseName().left(10) + "..." +
+			short_name = fi.completeBaseName().left(10) + "..." +
 				fi.fileName().right(10);
 		}
 		m_short_src =  short_path + short_name;
@@ -117,7 +117,7 @@ void CTranscode::RunTranscode(CFFmpeg_Glue &ffmpeg, int (cb)(void *, int), void 
 {
 	m_being_run = true;
 	QFileInfo fi(m_src);
-	QString target_path = GetAppSettings()->TargetDir().filePath(fi.baseName() + ".mp4");
+	QString target_path = GetAppSettings()->TargetDir().filePath(fi.completeBaseName() + ".mp4");
 	
 	//
 	// Some tell, that other resolutions bisides 320x240 are possible. Never
@@ -127,13 +127,13 @@ void CTranscode::RunTranscode(CFFmpeg_Glue &ffmpeg, int (cb)(void *, int), void 
 	int h_size = 320 - 2*m_h_padding;
 	ffmpeg.RunTranscode(m_src.toUtf8(), target_path.toUtf8(), m_s_bitrate, m_v_bitrate,
 		v_size, h_size, m_v_padding, m_h_padding, 
-		fi.baseName().toUtf8(), cb, ptr);
+		fi.completeBaseName().toUtf8(), cb, ptr);
 }
 
 void CTranscode::RunThumbnail(CFFmpeg_Glue &)
 {
 	QFileInfo fi(m_src);
-	QString target_path = GetAppSettings()->TargetDir().filePath(fi.baseName() + ".thm");
+	QString target_path = GetAppSettings()->TargetDir().filePath(fi.completeBaseName() + ".thm");
 
 	CAVInfo m_in_info(m_src.toUtf8());
 	m_in_info.Seek(m_thumbnail_time);
