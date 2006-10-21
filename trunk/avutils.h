@@ -16,8 +16,8 @@
 #ifndef AVUTILS_H_
 #define AVUTILS_H_
 
-#include "ffmpeg/avformat.h"
-#include "ffmpeg/avcodec.h"
+#include "ffmpeg/libavformat/avformat.h"
+#include "ffmpeg/libavcodec/avcodec.h"
 
 int GetMP4Title(const char *file, char *title_buf);
 

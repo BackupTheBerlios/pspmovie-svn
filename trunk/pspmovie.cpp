@@ -204,7 +204,10 @@ bool CPSPMovie::DoCopy(QWidget *parent, const QString &source, const QString &ta
 		printf("ERROR: dst open failed with error %d\n", dst.error());
 		return false;
 	}
+#if defined Q_OS_WIN32
+#else
 	sync();
+#endif
 
 	const int bufsize = 0x10000;
 
@@ -232,7 +235,10 @@ bool CPSPMovie::DoCopy(QWidget *parent, const QString &source, const QString &ta
 		dst.flush();
 		curr_step++;
 	}
+#if defined Q_OS_WIN32
+#else
 	sync();
+#endif
 	delete buffer;
 
 	return true;
@@ -455,7 +461,6 @@ int main(int argc, char *argv[])
  	if ( !CanDoPSP() ) {
 		QMessageBox::critical(0, "ERROR: bad ffmpeg library",
 			"FFMPEG library you have can not encode PSP format correctly\n"
-			"You have version \"" FFMPEG_VERSION "\" of FFMPEG"
 			);
 		return -1;
 	}
