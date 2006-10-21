@@ -204,8 +204,7 @@ bool CPSPMovie::DoCopy(QWidget *parent, const QString &source, const QString &ta
 		printf("ERROR: dst open failed with error %d\n", dst.error());
 		return false;
 	}
-#if defined Q_OS_WIN32
-#else
+#if defined Q_OS_UNIX
 	sync();
 #endif
 
@@ -235,8 +234,7 @@ bool CPSPMovie::DoCopy(QWidget *parent, const QString &source, const QString &ta
 		dst.flush();
 		curr_step++;
 	}
-#if defined Q_OS_WIN32
-#else
+#if defined Q_OS_UNIX
 	sync();
 #endif
 	delete buffer;
